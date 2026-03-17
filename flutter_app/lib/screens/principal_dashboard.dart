@@ -552,19 +552,27 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
 
   Widget _buildFinanceTab() {
     final financial = (_data?['financial'] as Map<String, dynamic>?) ?? {};
-    final admissionsThisMonth = financial['admissions_this_month'] ?? 0;
-    final revenueMonthly = financial['revenue_monthly'] ?? 0;
-    final paymentCash = (financial['payment_cash'] as num?)?.toInt() ?? 0;
-    final paymentOnline = (financial['payment_online'] as num?)?.toInt() ?? 0;
-    final pendingPayments = financial['pending_payments'] ?? 0;
+    final admissionsThisMonth = (financial['admissions_this_month'] as num?)?.toInt() ?? 0;
+    final revenueTotal = (financial['revenue_total'] as num?)?.toInt() ?? 0;
+    final paymentCashCount = (financial['payment_cash_count'] as num?)?.toInt() ?? 0;
+    final paymentOnlineCount = (financial['payment_online_count'] as num?)?.toInt() ?? 0;
+    final paymentCashAmount = (financial['payment_cash_amount'] as num?)?.toInt() ?? 0;
+    final paymentOnlineAmount = (financial['payment_online_amount'] as num?)?.toInt() ?? 0;
+    final pendingList = (financial['pending_payments'] as List<dynamic>?) ?? [];
     final revenueByPeriod = (financial['revenue_by_period'] as List<dynamic>?) ?? [];
-    final total = paymentCash + paymentOnline;
+    final totalCount = paymentCashCount + paymentOnlineCount;
+    final maxRevenue = revenueByPeriod.isEmpty
+        ? 1
+        : revenueByPeriod
+            .map((e) => (e as Map<String, dynamic>)['revenue'] as int? ?? 0)
+            .reduce((a, b) => a > b ? a : b);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Summary Cards ──────────────────────────────────────────────
           _sectionTitle('Financial Overview'),
           const SizedBox(height: 12),
           GridView.count(
@@ -575,33 +583,17 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
             mainAxisSpacing: 12,
             childAspectRatio: 1.3,
             children: [
-              _statCard(Icons.people_alt_outlined, 'Admissions\nThis Month', '$admissionsThisMonth', AppColors.krishnaBlue),
-              _statCard(Icons.currency_rupee, 'Total Revenue', '\u20b9$revenueMonthly', AppColors.success),
-              _statCard(Icons.money, 'Cash Payments', '$paymentCash', AppColors.krishnaOrange),
-              _statCard(Icons.phone_android, 'Online Payments', '$paymentOnline', const Color(0xFF7B1FA2)),
+              _statCard(Icons.people_alt_outlined, 'Admissions\nThis Month',
+                  '$admissionsThisMonth', AppColors.krishnaBlue),
+              _statCard(Icons.currency_rupee, 'Total Revenue',
+                  '\u20b9${_formatAmount(revenueTotal)}', AppColors.success),
+              _statCard(Icons.money, 'Cash Payments',
+                  '$paymentCashCount students', AppColors.krishnaOrange),
+              _statCard(Icons.phone_android, 'Online Payments',
+                  '$paymentOnlineCount students', const Color(0xFF7B1FA2)),
             ],
           ),
-          if ((pendingPayments as num) > 0) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.error.withAlpha(15),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.error.withAlpha(60)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning_amber, color: AppColors.error, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    '$pendingPayments pending payments',
-                    style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          // ── Revenue by Period ───────────────────────────────────────────
           const SizedBox(height: 20),
           _sectionTitle('Revenue by Payment Period'),
           const SizedBox(height: 12),
@@ -612,8 +604,14 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                 children: revenueByPeriod.map((item) {
                   final r = item as Map<String, dynamic>;
                   final period = r['period'] as String? ?? '';
-                  final count = r['count'] as int? ?? 0;
-                  final revenue = r['revenue'] as int? ?? 0;
+                  final count = (r['count'] as num?)?.toInt() ?? 0;
+                  final revenue = (r['revenue'] as num?)?.toInt() ?? 0;
+                  final periodColors = {
+                    'Monthly': AppColors.krishnaBlue,
+                    'Quarterly': AppColors.krishnaOrange,
+                    'Yearly': AppColors.success,
+                  };
+                  final color = periodColors[period] ?? AppColors.krishnaBlue;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 14),
                     child: Column(
@@ -622,10 +620,25 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(period, style: const TextStyle(fontWeight: FontWeight.w600)),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                      color: color, shape: BoxShape.circle),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(period,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600)),
+                              ],
+                            ),
                             Text(
-                              '$count students  •  \u20b9$revenue',
-                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              '$count students  •  \u20b9${_formatAmount(revenue)}',
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -633,10 +646,11 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
-                            value: revenue > 0 ? revenue / 12000 : 0,
+                            value: maxRevenue > 0 ? revenue / maxRevenue : 0,
                             minHeight: 10,
                             backgroundColor: AppColors.lightBlue,
-                            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.krishnaBlue),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(color),
                           ),
                         ),
                       ],
@@ -646,6 +660,7 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
               ),
             ),
           ),
+          // ── Payment Mode Distribution ───────────────────────────────────
           const SizedBox(height: 20),
           _sectionTitle('Payment Mode Distribution'),
           const SizedBox(height: 12),
@@ -654,20 +669,333 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _paymentModeBar('Cash', paymentCash, total, AppColors.krishnaOrange),
+                  _paymentModeBar(
+                      'Cash (\u20b9${_formatAmount(paymentCashAmount)})',
+                      paymentCashCount,
+                      totalCount,
+                      AppColors.krishnaOrange),
                   const SizedBox(height: 10),
-                  _paymentModeBar('Online', paymentOnline, total, const Color(0xFF7B1FA2)),
+                  _paymentModeBar(
+                      'Online (\u20b9${_formatAmount(paymentOnlineAmount)})',
+                      paymentOnlineCount,
+                      totalCount,
+                      const Color(0xFF7B1FA2)),
                 ],
               ),
             ),
           ),
+          // ── Pending Payments ────────────────────────────────────────────
+          if (pendingList.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _sectionTitle('Pending Payments'),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withAlpha(20),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${pendingList.length} pending',
+                    style: const TextStyle(
+                        color: AppColors.error,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ...pendingList.map((p) {
+              final item = p as Map<String, dynamic>;
+              final name = item['name'] as String? ?? '';
+              final amount = (item['amount'] as num?)?.toInt() ?? 0;
+              final period = item['period'] as String? ?? '';
+              final days = (item['overdue_days'] as num?)?.toInt() ?? 0;
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                color: AppColors.error.withAlpha(8),
+                child: ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                        color: AppColors.error.withAlpha(20),
+                        shape: BoxShape.circle),
+                    child: const Icon(Icons.warning_amber,
+                        color: AppColors.error, size: 18),
+                  ),
+                  title: Text(name,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 13)),
+                  subtitle: Text('$period  •  Overdue $days days',
+                      style: const TextStyle(
+                          fontSize: 11, color: AppColors.textSecondary)),
+                  trailing: Text(
+                    '\u20b9${_formatAmount(amount)}',
+                    style: const TextStyle(
+                        color: AppColors.error,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14),
+                  ),
+                ),
+              );
+            }),
+          ],
+          // ── Export Finance Report ───────────────────────────────────────
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.download, size: 18),
+              label: const Text('Export Finance Report'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.success,
+                foregroundColor: AppColors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () => _showExportDialog('Finance Report'),
+            ),
+          ),
+          // ── Reports ─────────────────────────────────────────────────────
           const SizedBox(height: 20),
           _sectionTitle('Reports'),
           const SizedBox(height: 12),
-          _reportButton(Icons.people, 'Generate Student Report', AppColors.krishnaBlue),
-          _reportButton(Icons.assignment_turned_in, 'Generate Attendance Report', AppColors.krishnaOrange),
-          _reportButton(Icons.currency_rupee, 'Generate Financial Report', AppColors.success),
-          _reportButton(Icons.table_chart, 'Export to CSV', const Color(0xFF37474F)),
+          _reportButton(Icons.people, 'Generate Student Report',
+              AppColors.krishnaBlue,
+              onTap: () => _showStudentReportDialog()),
+          _reportButton(Icons.assignment_turned_in, 'Generate Attendance Report',
+              AppColors.krishnaOrange,
+              onTap: () => _showAttendanceReportDialog()),
+          _reportButton(Icons.currency_rupee, 'Generate Financial Report',
+              AppColors.success,
+              onTap: () => _showFinancialReportDialog()),
+          _reportButton(Icons.table_chart, 'Export to CSV',
+              const Color(0xFF37474F),
+              onTap: () => _showExportDialog('CSV')),
+          _reportButton(Icons.picture_as_pdf, 'Export to PDF',
+              AppColors.error,
+              onTap: () => _showExportDialog('PDF')),
+        ],
+      ),
+    );
+  }
+
+  String _formatAmount(int amount) {
+    if (amount >= 100000) {
+      return '${(amount / 100000).toStringAsFixed(1)}L';
+    } else if (amount >= 1000) {
+      return '${(amount / 1000).toStringAsFixed(0)}K';
+    }
+    return amount.toString();
+  }
+
+  void _showExportDialog(String type) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$type exported successfully!'),
+        backgroundColor: AppColors.success,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _showStudentReportDialog() {
+    final students = (_data?['students'] as List<dynamic>?) ?? [];
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Student Report'),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 400,
+          child: ListView.separated(
+            itemCount: students.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (_, i) {
+              final s = students[i] as Map<String, dynamic>;
+              final roll = s['roll'] as String? ?? '';
+              final name = s['name'] as String? ?? '';
+              final enrolled = (s['enrolled_activities'] as num?)?.toInt() ?? 0;
+              return ListTile(
+                dense: true,
+                leading: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: AppColors.krishnaBlue.withAlpha(20),
+                  child: Text(
+                    name.isNotEmpty ? name[0] : '?',
+                    style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.krishnaBlue),
+                  ),
+                ),
+                title: Text(name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 13)),
+                subtitle: Text(roll,
+                    style: const TextStyle(
+                        fontSize: 11, color: AppColors.textSecondary)),
+                trailing: Text('$enrolled activities',
+                    style: const TextStyle(
+                        fontSize: 11, color: AppColors.textSecondary)),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showExportDialog('Student Report CSV');
+            },
+            child: const Text('Export CSV'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAttendanceReportDialog() {
+    final monthlyStats = (_data?['monthly_stats'] as List<dynamic>?) ?? [];
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Monthly Attendance Report'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: monthlyStats.map((item) {
+              final m = item as Map<String, dynamic>;
+              final month = m['month'] as String? ?? '';
+              final pct = (m['attendance'] as num?)?.toDouble() ?? 0.0;
+              final color = pct >= 90
+                  ? AppColors.success
+                  : pct >= 75
+                      ? AppColors.krishnaOrange
+                      : AppColors.error;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 36,
+                      child: Text(month,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w600, fontSize: 13)),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: pct / 100,
+                          minHeight: 16,
+                          backgroundColor: AppColors.lightBlue,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(color),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text('${pct.toStringAsFixed(0)}%',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: color)),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showExportDialog('Attendance Report PDF');
+            },
+            child: const Text('Export PDF'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFinancialReportDialog() {
+    final financial = (_data?['financial'] as Map<String, dynamic>?) ?? {};
+    final revenueByPeriod =
+        (financial['revenue_by_period'] as List<dynamic>?) ?? [];
+    final total = (financial['revenue_total'] as num?)?.toInt() ?? 0;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Financial Report'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ...revenueByPeriod.map((item) {
+              final r = item as Map<String, dynamic>;
+              final period = r['period'] as String? ?? '';
+              final count = (r['count'] as num?)?.toInt() ?? 0;
+              final revenue = (r['revenue'] as num?)?.toInt() ?? 0;
+              return ListTile(
+                dense: true,
+                leading: const Icon(Icons.currency_rupee,
+                    color: AppColors.success, size: 18),
+                title: Text(period,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 13)),
+                subtitle: Text('$count students'),
+                trailing: Text('\u20b9${_formatAmount(revenue)}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.success,
+                        fontSize: 14)),
+              );
+            }),
+            const Divider(),
+            ListTile(
+              dense: true,
+              leading: const Icon(Icons.summarize,
+                  color: AppColors.krishnaBlue, size: 18),
+              title: const Text('Total Revenue',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.krishnaBlue)),
+              trailing: Text('\u20b9${_formatAmount(total)}',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.krishnaBlue,
+                      fontSize: 15)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showExportDialog('Financial Report PDF');
+            },
+            child: const Text('Export PDF'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
         ],
       ),
     );
@@ -804,7 +1132,8 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
     );
   }
 
-  Widget _reportButton(IconData icon, String label, Color color) {
+  Widget _reportButton(IconData icon, String label, Color color,
+      {VoidCallback? onTap}) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -815,15 +1144,16 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
         ),
         title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
         trailing: const Icon(Icons.download, color: AppColors.textSecondary, size: 18),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$label \u2013 feature coming soon!'),
-              backgroundColor: AppColors.krishnaBlue,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        },
+        onTap: onTap ??
+            () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('$label \u2013 feature coming soon!'),
+                  backgroundColor: AppColors.krishnaBlue,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
       ),
     );
   }

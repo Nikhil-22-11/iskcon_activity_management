@@ -647,8 +647,6 @@ class MockDataService {
       'enrolled': (_enrollments[a.id] ?? []).length,
     }).toList();
 
-    // Financial mock data
-    final admissionsThisMonth = 12 + _admissions.length;
     return {
       'total_students': totalStudents,
       'total_activities': _activities.length,
@@ -676,15 +674,23 @@ class MockDataService {
             .length,
       }).toList(),
       'financial': {
-        'admissions_this_month': admissionsThisMonth,
-        'revenue_monthly': admissionsThisMonth * 500,
-        'payment_cash': (admissionsThisMonth * 0.4).round(),
-        'payment_online': (admissionsThisMonth * 0.6).round(),
-        'pending_payments': 4,
+        'admissions_this_month': 12,
+        'revenue_total': 185000,
+        'payment_cash_count': 7,
+        'payment_online_count': 5,
+        'payment_cash_amount': 111000,
+        'payment_online_amount': 74000,
+        'pending_payments': [
+          {'name': 'Arjun Sharma',  'amount': 4500,  'period': 'Monthly',    'overdue_days': 5},
+          {'name': 'Priya Patel',   'amount': 6000,  'period': 'Quarterly',  'overdue_days': 12},
+          {'name': 'Rahul Verma',   'amount': 8000,  'period': 'Yearly',     'overdue_days': 3},
+          {'name': 'Sneha Joshi',   'amount': 4500,  'period': 'Monthly',    'overdue_days': 8},
+          {'name': 'Karan Mehta',   'amount': 6000,  'period': 'Quarterly',  'overdue_days': 15},
+        ],
         'revenue_by_period': [
-          {'period': 'Monthly', 'count': 8, 'revenue': 4000},
-          {'period': 'Quarterly', 'count': 6, 'revenue': 4500},
-          {'period': 'Yearly', 'count': 2, 'revenue': 3000},
+          {'period': 'Monthly',     'count': 5, 'revenue': 45000},
+          {'period': 'Quarterly',   'count': 4, 'revenue': 60000},
+          {'period': 'Yearly',      'count': 3, 'revenue': 80000},
         ],
       },
     };
