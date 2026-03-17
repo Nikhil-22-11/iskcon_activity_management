@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../services/api_service.dart';
+import '../services/qr_service.dart';
 import '../models/attendance_model.dart';
 import '../models/student_model.dart';
 import '../models/activity_model.dart';
@@ -114,12 +116,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                             selectedStudent!.id, selectedActivity!.id);
                         _loadData();
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('✅ Attendance marked successfully'),
-                              backgroundColor: AppColors.success,
-                            ),
-                          );
+                          _showAttendanceQr(selectedStudent!, selectedActivity!);
                         }
                       } catch (e) {
                         if (mounted) {
@@ -134,6 +131,86 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     },
               child: const Text('Check In'),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAttendanceQr(StudentModel student, ActivityModel activity) {
+    final qrData = QrService.attendanceQrData(
+      studentId: student.id,
+      studentName: student.name,
+      activityId: activity.id,
+      activityName: activity.name,
+    );
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Icon(Icons.check_circle,
+                color: AppColors.success, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              '${student.name} – Check-in Confirmed',
+              style: const TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              activity.name,
+              style: const TextStyle(
+                  color: AppColors.textSecondary, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: AppColors.krishnaBlue.withAlpha(80)),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withAlpha(15), blurRadius: 8),
+                ],
+              ),
+              child: QrImageView(
+                data: qrData,
+                version: QrVersions.auto,
+                size: 180,
+                eyeStyle: const QrEyeStyle(
+                  eyeShape: QrEyeShape.square,
+                  color: AppColors.deepBlue,
+                ),
+                dataModuleStyle: const QrDataModuleStyle(
+                  dataModuleShape: QrDataModuleShape.square,
+                  color: AppColors.krishnaBlue,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Scan to verify attendance',
+              style: const TextStyle(
+                  fontSize: 12, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 24),
           ],
         ),
       ),

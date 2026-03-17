@@ -150,22 +150,27 @@ class ApiService {
   // ──────────────────── Auth ────────────────────
 
   Future<UserModel> login(String email, String password) async {
-    // Accept both the real admin credentials and a quick dev shortcut
-    final validCredentials = (email == 'admin@iskcon.org' && password == 'Admin123') ||
-        (email == 'teacher@iskcon.org' && password == 'Teacher123');
+    // Mock credentials for all 3 roles
+    const credentials = {
+      'guard@iskcon.org': {'password': 'Guard123', 'role': 'guard', 'name': 'Guard'},
+      'teacher@iskcon.org': {'password': 'Teacher123', 'role': 'teacher', 'name': 'Teacher'},
+      'principal@iskcon.org': {
+        'password': 'Principal123',
+        'role': 'principal',
+        'name': 'Principal',
+      },
+    };
 
-    if (!validCredentials) {
+    final entry = credentials[email.toLowerCase().trim()];
+    if (entry == null || entry['password'] != password) {
       throw const ApiException('Invalid email or password');
     }
 
-    final role = email.startsWith('teacher') ? 'teacher' : 'admin';
-    final name = role == 'admin' ? 'Admin User' : 'Teacher';
-
     final mockUser = UserModel(
-      id: 1,
+      id: credentials.keys.toList().indexOf(email.toLowerCase().trim()) + 1,
       email: email,
-      name: name,
-      role: role,
+      name: entry['name']!,
+      role: entry['role']!,
       token: _mockToken,
     );
     await _saveToken(_mockToken);
@@ -459,6 +464,18 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> getGuardDashboard() async {
+    final token = await getToken();
+    if (_isMockToken(token)) {
+      return {'data': MockDataService().getGuardDashboard()};
+    }
+    try {
+      return await _get(AppUrls.dashboardGuard);
+    } catch (_) {
+      return {'data': MockDataService().getGuardDashboard()};
+    }
+  }
+
   Future<Map<String, dynamic>> getTeacherDashboard() async {
     final token = await getToken();
     if (_isMockToken(token)) {
@@ -474,12 +491,12 @@ class ApiService {
   Future<Map<String, dynamic>> getPrincipalDashboard() async {
     final token = await getToken();
     if (_isMockToken(token)) {
-      return {'data': MockDataService().getDashboardStats()};
+      return {'data': MockDataService().getPrincipalDashboard()};
     }
     try {
       return await _get(AppUrls.dashboardPrincipal);
     } catch (_) {
-      return {'data': MockDataService().getDashboardStats()};
+      return {'data': MockDataService().getPrincipalDashboard()};
     }
   }
 }

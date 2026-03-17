@@ -37,8 +37,16 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
       if (!mounted) return;
-      final route =
-          user.isAdmin ? AppRoutes.adminDashboard : AppRoutes.teacherDashboard;
+      final String route;
+      if (user.isGuard) {
+        route = AppRoutes.guardDashboard;
+      } else if (user.isTeacher) {
+        route = AppRoutes.teacherDashboard;
+      } else if (user.isPrincipal) {
+        route = AppRoutes.principalDashboard;
+      } else {
+        route = AppRoutes.guardDashboard;
+      }
       Navigator.of(context).pushReplacementNamed(route);
     } on ApiException catch (e) {
       setState(() => _errorMessage = e.message);
@@ -240,12 +248,30 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 16),
             Center(
-              child: Text(
-                'admin@iskcon.org  |  Admin123',
-                style: TextStyle(
-                  color: AppColors.textSecondary.withAlpha(160),
-                  fontSize: 12,
-                ),
+              child: Column(
+                children: [
+                  Text(
+                    'guard@iskcon.org  |  Guard123',
+                    style: TextStyle(
+                      color: AppColors.textSecondary.withAlpha(160),
+                      fontSize: 11,
+                    ),
+                  ),
+                  Text(
+                    'teacher@iskcon.org  |  Teacher123',
+                    style: TextStyle(
+                      color: AppColors.textSecondary.withAlpha(160),
+                      fontSize: 11,
+                    ),
+                  ),
+                  Text(
+                    'principal@iskcon.org  |  Principal123',
+                    style: TextStyle(
+                      color: AppColors.textSecondary.withAlpha(160),
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
