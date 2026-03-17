@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../services/api_service.dart';
 import '../utils/constants.dart';
 import '../navigation/routes.dart';
+import 'admission_form.dart';
 
 class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({super.key});
@@ -268,7 +269,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Upcoming Activities',
+          'Activities',
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontSize: 18,
                 color: AppColors.deepBlue,
@@ -277,30 +278,101 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         const SizedBox(height: 12),
         ...activities.map((item) {
           final a = item as Map<String, dynamic>;
+          final activityId = a['id'] as int? ?? 0;
+          final enrolled = a['total_enrolled'] as int? ?? 0;
           return Card(
             margin: const EdgeInsets.only(bottom: 8),
-            child: ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.krishnaOrange.withAlpha(30),
-                  shape: BoxShape.circle,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => _showActivityStudents(a),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.krishnaOrange.withAlpha(30),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.event,
+                          color: AppColors.krishnaOrange, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            a['name'] as String? ?? '',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            a['schedule'] as String? ?? '',
+                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                          ),
+                          if (a['teacher'] != null)
+                            Text(
+                              'Teacher: ${a['teacher']}',
+                              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.krishnaBlue.withAlpha(20),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$enrolled enrolled',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.krishnaBlue,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Tap to view',
+                          style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                child: const Icon(Icons.event,
-                    color: AppColors.krishnaOrange, size: 20),
-              ),
-              title: Text(
-                a['name'] as String? ?? '',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              subtitle: Text(
-                a['schedule'] as String? ?? '',
-                style: const TextStyle(fontSize: 12),
               ),
             ),
           );
         }),
       ],
+    );
+  }
+
+  void _showActivityStudents(Map<String, dynamic> activity) {
+    final activityId = activity['id'] as int? ?? 0;
+    final activityName = activity['name'] as String? ?? 'Activity';
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _ActivityStudentsSheet(
+        activityId: activityId,
+        activityName: activityName,
+        activitySchedule: activity['schedule'] as String? ?? '',
+        activityTeacher: activity['teacher'] as String? ?? '',
+      ),
     );
   }
 
@@ -419,6 +491,25 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           route: AppRoutes.activityList,
           color: AppColors.success,
         ),
+        Card(
+          margin: const EdgeInsets.only(bottom: 10),
+          child: ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF7B1FA2).withAlpha(30),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.person_add_alt_1, color: Color(0xFF7B1FA2)),
+            ),
+            title: const Text('Admission', style: TextStyle(fontWeight: FontWeight.w600)),
+            subtitle: const Text('Add new student admission'),
+            trailing: const Icon(Icons.chevron_right, color: AppColors.krishnaBlue),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const AdmissionForm()),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -456,6 +547,217 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     } catch (_) {
       return iso;
     }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Bottom sheet: enrolled students for an activity
+// ─────────────────────────────────────────────────────────────────
+
+class _ActivityStudentsSheet extends StatefulWidget {
+  final int activityId;
+  final String activityName;
+  final String activitySchedule;
+  final String activityTeacher;
+
+  const _ActivityStudentsSheet({
+    required this.activityId,
+    required this.activityName,
+    required this.activitySchedule,
+    required this.activityTeacher,
+  });
+
+  @override
+  State<_ActivityStudentsSheet> createState() => _ActivityStudentsSheetState();
+}
+
+class _ActivityStudentsSheetState extends State<_ActivityStudentsSheet> {
+  List<Map<String, dynamic>> _students = [];
+  bool _isLoading = true;
+  String _search = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStudents();
+  }
+
+  Future<void> _loadStudents() async {
+    try {
+      final result = await ApiService().getEnrolledStudents(widget.activityId);
+      if (mounted) {
+        setState(() {
+          _students = result;
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  List<Map<String, dynamic>> get _filtered {
+    if (_search.isEmpty) return _students;
+    final q = _search.toLowerCase();
+    return _students
+        .where((s) =>
+            (s['name'] as String? ?? '').toLowerCase().contains(q) ||
+            (s['roll_number'] as String? ?? '').toLowerCase().contains(q))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollCtrl) => Column(
+        children: [
+          // Handle
+          Container(
+            margin: const EdgeInsets.only(top: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          // Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.krishnaOrange.withAlpha(30),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.event, color: AppColors.krishnaOrange),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.activityName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.deepBlue,
+                            ),
+                          ),
+                          Text(widget.activitySchedule,
+                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          if (widget.activityTeacher.isNotEmpty)
+                            Text('Teacher: ${widget.activityTeacher}',
+                                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.krishnaBlue.withAlpha(20),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${_students.length} enrolled',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          color: AppColors.krishnaBlue,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Search bar
+                TextField(
+                  onChanged: (v) => setState(() => _search = v),
+                  decoration: InputDecoration(
+                    hintText: 'Search students...',
+                    prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          // Student list
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: AppColors.krishnaBlue))
+                : _filtered.isEmpty
+                    ? const Center(
+                        child: Text('No students found',
+                            style: TextStyle(color: AppColors.textSecondary)))
+                    : ListView.builder(
+                        controller: scrollCtrl,
+                        padding: const EdgeInsets.all(12),
+                        itemCount: _filtered.length,
+                        itemBuilder: (_, i) {
+                          final s = _filtered[i];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: AppColors.krishnaBlue.withAlpha(25),
+                                child: Text(
+                                  '${i + 1}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.krishnaBlue,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                s['name'] as String? ?? '',
+                                style: const TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              subtitle: Text(
+                                'Roll: ${s['roll_number'] ?? ''}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              trailing: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.success.withAlpha(20),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  s['enrollment_status'] as String? ?? 'Active',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.success,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
