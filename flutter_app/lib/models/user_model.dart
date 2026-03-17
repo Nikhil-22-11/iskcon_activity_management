@@ -33,6 +33,8 @@ class UserModel {
     };
   }
 
-  bool get isAdmin => role == 'admin' || role == 'principal';
+  bool get isAdmin => role == 'admin';
+  bool get isGuard => role == 'guard';
   bool get isTeacher => role == 'teacher';
+  bool get isPrincipal => role == 'principal';
 }

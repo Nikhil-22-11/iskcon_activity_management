@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../services/api_service.dart';
 import '../utils/constants.dart';
 import '../navigation/routes.dart';
@@ -11,7 +12,7 @@ class TeacherDashboard extends StatefulWidget {
 }
 
 class _TeacherDashboardState extends State<TeacherDashboard> {
-  Map<String, dynamic>? _dashboardData;
+  Map<String, dynamic>? _data;
   bool _isLoading = true;
   String? _userName;
 
@@ -22,18 +23,18 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   }
 
   Future<void> _loadData() async {
+    setState(() => _isLoading = true);
     try {
       final user = await ApiService().getCurrentUser();
-      final data = await ApiService().getTeacherDashboard();
+      final result = await ApiService().getTeacherDashboard();
       if (mounted) {
         setState(() {
           _userName = user?.name ?? user?.email ?? 'Teacher';
-          _dashboardData =
-              data['data'] as Map<String, dynamic>? ?? data;
+          _data = result['data'] as Map<String, dynamic>? ?? result;
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -53,10 +54,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () {
-              setState(() => _isLoading = true);
-              _loadData();
-            },
+            onPressed: _loadData,
           ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -80,7 +78,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     child: CircularProgressIndicator(
                         color: AppColors.krishnaBlue))
               else ...[
-                _buildTodaySummary(),
+                _buildClassSummary(),
+                const SizedBox(height: 20),
+                _buildAttendanceSummary(),
+                const SizedBox(height: 20),
+                _buildUpcomingActivities(),
+                const SizedBox(height: 20),
+                _buildAttendanceHistory(),
                 const SizedBox(height: 20),
               ],
               _buildQuickActions(context),
@@ -92,6 +96,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   }
 
   Widget _buildWelcomeBanner() {
+    final className = _data?['class_name'] as String? ?? 'My Class';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -118,10 +123,17 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   ),
                 ),
                 Text(
+                  className,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
                   AppStrings.hareKrishna,
                   style: TextStyle(
                     color: AppColors.krishnaOrange.withAlpha(230),
-                    fontSize: 14,
+                    fontSize: 13,
                   ),
                 ),
               ],
@@ -132,32 +144,38 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     );
   }
 
-  Widget _buildTodaySummary() {
-    final todayCount =
-        _dashboardData?['today_attendance'] ?? _dashboardData?['todayCount'] ?? 0;
-    final myStudents =
-        _dashboardData?['my_students'] ?? _dashboardData?['myStudents'] ?? 0;
-    final myActivities =
-        _dashboardData?['my_activities'] ?? _dashboardData?['myActivities'] ?? 0;
+  Widget _buildClassSummary() {
+    final total = _data?['total_students'] ?? 0;
+    final present = _data?['present_today'] ?? 0;
+    final absent = _data?['absent_today'] ?? 0;
 
     return Row(
       children: [
         Expanded(
           child: _buildSummaryTile(
-              'Today\'s\nAttendance',
-              '$todayCount',
-              Icons.check_circle_outline,
-              AppColors.krishnaOrange),
+            'Total Students',
+            '$total',
+            Icons.people_outline,
+            AppColors.krishnaBlue,
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _buildSummaryTile('My Students', '$myStudents',
-              Icons.people_outline, AppColors.krishnaBlue),
+          child: _buildSummaryTile(
+            'Present Today',
+            '$present',
+            Icons.check_circle_outline,
+            AppColors.success,
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _buildSummaryTile('My Activities', '$myActivities',
-              Icons.event_outlined, AppColors.success),
+          child: _buildSummaryTile(
+            'Absent Today',
+            '$absent',
+            Icons.cancel_outlined,
+            AppColors.error,
+          ),
         ),
       ],
     );
@@ -188,6 +206,180 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAttendanceSummary() {
+    final total = (_data?['total_students'] as num?)?.toDouble() ?? 1;
+    final present = (_data?['present_today'] as num?)?.toDouble() ?? 0;
+    final pct = total > 0 ? (present / total * 100).round() : 0;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Today's Attendance Rate",
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontSize: 15,
+                    color: AppColors.deepBlue,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: total > 0 ? present / total : 0,
+                      minHeight: 18,
+                      backgroundColor: AppColors.lightBlue,
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.success),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  '$pct%',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: AppColors.success,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUpcomingActivities() {
+    final activities =
+        (_data?['upcoming_activities'] as List<dynamic>?) ?? [];
+    if (activities.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Upcoming Activities',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontSize: 18,
+                color: AppColors.deepBlue,
+              ),
+        ),
+        const SizedBox(height: 12),
+        ...activities.map((item) {
+          final a = item as Map<String, dynamic>;
+          return Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.krishnaOrange.withAlpha(30),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.event,
+                    color: AppColors.krishnaOrange, size: 20),
+              ),
+              title: Text(
+                a['name'] as String? ?? '',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                a['schedule'] as String? ?? '',
+                style: const TextStyle(fontSize: 12),
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildAttendanceHistory() {
+    final history =
+        (_data?['attendance_history'] as List<dynamic>?) ?? [];
+    if (history.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Today's Attendance History",
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontSize: 18,
+                color: AppColors.deepBlue,
+              ),
+        ),
+        const SizedBox(height: 12),
+        ...history.map((item) {
+          final h = item as Map<String, dynamic>;
+          final isOut = h['check_out'] != null;
+          return Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: isOut
+                    ? AppColors.success.withAlpha(30)
+                    : AppColors.krishnaOrange.withAlpha(30),
+                child: Icon(
+                  isOut ? Icons.check_circle : Icons.login,
+                  color: isOut ? AppColors.success : AppColors.krishnaOrange,
+                  size: 20,
+                ),
+              ),
+              title: Text(
+                h['student'] as String? ?? 'Student',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(h['activity'] as String? ?? '',
+                      style: const TextStyle(fontSize: 12)),
+                  if (h['check_in'] != null)
+                    Text(
+                      'In: ${_fmt(h['check_in'] as String)}',
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  if (h['check_out'] != null)
+                    Text(
+                      'Out: ${_fmt(h['check_out'] as String)}',
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                ],
+              ),
+              trailing: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isOut
+                      ? AppColors.success.withAlpha(20)
+                      : AppColors.krishnaOrange.withAlpha(20),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  isOut ? 'Done' : 'Present',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: isOut ? AppColors.success : AppColors.krishnaOrange,
+                  ),
+                ),
+              ),
+              isThreeLine: true,
+            ),
+          );
+        }),
+      ],
     );
   }
 
@@ -227,14 +419,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           route: AppRoutes.activityList,
           color: AppColors.success,
         ),
-        _buildActionTile(
-          context,
-          icon: Icons.person_add,
-          label: AppStrings.visitors,
-          subtitle: 'Visitor check-in & check-out',
-          route: AppRoutes.visitorCheckIn,
-          color: const Color(0xFF7B1FA2),
-        ),
       ],
     );
   }
@@ -256,12 +440,22 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ),
           child: Icon(icon, color: color),
         ),
-        title: Text(label,
-            style: const TextStyle(fontWeight: FontWeight.w600)),
+        title:
+            Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right, color: AppColors.krishnaBlue),
+        trailing:
+            const Icon(Icons.chevron_right, color: AppColors.krishnaBlue),
         onTap: () => Navigator.of(context).pushNamed(route),
       ),
     );
   }
+
+  String _fmt(String iso) {
+    try {
+      return DateFormat('hh:mm a').format(DateTime.parse(iso).toLocal());
+    } catch (_) {
+      return iso;
+    }
+  }
 }
+

@@ -21,7 +21,9 @@ class AppStrings {
   static const String email = 'Email';
   static const String password = 'Password';
   static const String adminDashboard = 'Admin Dashboard';
+  static const String guardDashboard = 'Guard Dashboard';
   static const String teacherDashboard = 'Teacher Dashboard';
+  static const String principalDashboard = 'Principal Dashboard';
   static const String students = 'Students';
   static const String activities = 'Activities';
   static const String attendance = 'Attendance';
@@ -36,6 +38,7 @@ class AppUrls {
   static const String attendance = '/attendance';
   static const String visitors = '/visitors';
   static const String dashboardStats = '/dashboard/stats';
+  static const String dashboardGuard = '/dashboard/guard';
   static const String dashboardTeacher = '/dashboard/teacher';
   static const String dashboardPrincipal = '/dashboard/principal';
 }

@@ -160,67 +160,107 @@ class MockDataService {
   final List<ActivityModel> _activities = [
     ActivityModel(
       id: 1,
-      name: 'Bhagavad Gita Class',
-      description: 'Study of Bhagavad Gita with commentary',
-      schedule: 'Mon, Wed, Fri - 6:00 AM',
-      teacher: 'HH Radhanath Swami',
-      capacity: 30,
-      ageGroup: '10-18',
+      name: 'Swimming',
+      description: 'Swimming training and water safety',
+      schedule: 'Mon, Wed, Fri - 7:00 AM',
+      teacher: 'Coach Mahesh',
+      capacity: 20,
+      ageGroup: '8+',
       createdAt: '2024-01-01T10:00:00Z',
     ),
     ActivityModel(
       id: 2,
-      name: 'Kirtan & Bhajan',
-      description: 'Devotional singing and chanting',
-      schedule: 'Daily - 5:30 AM',
-      teacher: 'Prabhu Nityananda Das',
-      capacity: 50,
+      name: 'Yoga',
+      description: 'Morning yoga and meditation session',
+      schedule: 'Daily - 6:00 AM',
+      teacher: 'Prabhu Gopal Das',
+      capacity: 30,
       ageGroup: 'All',
       createdAt: '2024-01-01T10:00:00Z',
     ),
     ActivityModel(
       id: 3,
-      name: 'Deity Worship (Puja)',
-      description: 'Learning deity worship rituals and procedures',
-      schedule: 'Tue, Thu - 7:00 AM',
-      teacher: 'Mataji Bhakti Devi',
-      capacity: 15,
-      ageGroup: '12+',
+      name: 'Self-Defence',
+      description: 'Self-defence techniques and martial arts basics',
+      schedule: 'Tue, Thu - 4:00 PM',
+      teacher: 'Instructor Ravi',
+      capacity: 25,
+      ageGroup: '10+',
       createdAt: '2024-01-01T10:00:00Z',
     ),
     ActivityModel(
       id: 4,
-      name: 'Vedic Cooking',
-      description: 'Cooking prasadam following Vedic traditions',
-      schedule: 'Saturday - 9:00 AM',
+      name: 'Phonix',
+      description: 'Phonics and early reading programme',
+      schedule: 'Mon, Wed - 10:00 AM',
       teacher: 'Mataji Tulsi Devi',
       capacity: 20,
-      ageGroup: '14+',
+      ageGroup: '5-10',
       createdAt: '2024-01-01T10:00:00Z',
     ),
     ActivityModel(
       id: 5,
-      name: 'Sanskrit Study',
+      name: 'Art & Craft',
+      description: 'Creative arts, painting and handicrafts',
+      schedule: 'Saturday - 10:00 AM',
+      teacher: 'Mataji Saraswati Devi',
+      capacity: 25,
+      ageGroup: 'All',
+      createdAt: '2024-01-01T10:00:00Z',
+    ),
+    ActivityModel(
+      id: 6,
+      name: 'Sanskrit',
       description: 'Introduction to Sanskrit language and Vedic texts',
       schedule: 'Mon, Thu - 4:00 PM',
-      teacher: 'Prabhu Gopal Das',
+      teacher: 'Prabhu Nityananda Das',
       capacity: 25,
       ageGroup: '12-18',
       createdAt: '2024-01-01T10:00:00Z',
     ),
     ActivityModel(
-      id: 6,
-      name: 'Drama & Cultural Arts',
-      description: 'Performances based on Vedic epics and stories',
+      id: 7,
+      name: 'Speech & Drama',
+      description: 'Public speaking, drama and stage performance',
       schedule: 'Sunday - 3:00 PM',
-      teacher: 'Mataji Saraswati Devi',
-      capacity: 40,
+      teacher: 'Mataji Bhakti Devi',
+      capacity: 30,
       ageGroup: '8-18',
+      createdAt: '2024-01-01T10:00:00Z',
+    ),
+    ActivityModel(
+      id: 8,
+      name: 'Indian Culture and Value for Kids',
+      description: 'Learning Indian traditions, values and cultural heritage',
+      schedule: 'Fri - 3:00 PM',
+      teacher: 'HH Radhanath Swami',
+      capacity: 40,
+      ageGroup: '5-15',
+      createdAt: '2024-01-01T10:00:00Z',
+    ),
+    ActivityModel(
+      id: 9,
+      name: 'Bharat Natiyam',
+      description: 'Classical Indian dance – Bharatanatyam',
+      schedule: 'Tue, Sat - 5:00 PM',
+      teacher: 'Mataji Radha Devi',
+      capacity: 20,
+      ageGroup: '6-16',
+      createdAt: '2024-01-01T10:00:00Z',
+    ),
+    ActivityModel(
+      id: 10,
+      name: 'Music & Movement',
+      description: 'Music, rhythm and movement for kids',
+      schedule: 'Wed, Fri - 4:30 PM',
+      teacher: 'Prabhu Hari Das',
+      capacity: 30,
+      ageGroup: '4-12',
       createdAt: '2024-01-01T10:00:00Z',
     ),
   ];
 
-  int _nextActivityId = 7;
+  int _nextActivityId = 11;
 
   List<ActivityModel> getActivities() => List.unmodifiable(_activities);
 
@@ -280,54 +320,74 @@ class MockDataService {
       studentId: 1,
       activityId: 1,
       studentName: 'Arjun Sharma',
-      activityName: 'Bhagavad Gita Class',
-      checkInTime: '${_todayDate()}T06:05:00Z',
-      checkOutTime: '${_todayDate()}T07:30:00Z',
-      createdAt: '${_todayDate()}T06:05:00Z',
+      activityName: 'Swimming',
+      checkInTime: '${_todayDate()}T07:05:00Z',
+      checkOutTime: '${_todayDate()}T08:00:00Z',
+      createdAt: '${_todayDate()}T07:05:00Z',
     ),
     AttendanceModel(
       id: 2,
       studentId: 2,
       activityId: 1,
       studentName: 'Radha Patel',
-      activityName: 'Bhagavad Gita Class',
-      checkInTime: '${_todayDate()}T06:10:00Z',
+      activityName: 'Swimming',
+      checkInTime: '${_todayDate()}T07:10:00Z',
       checkOutTime: null,
-      createdAt: '${_todayDate()}T06:10:00Z',
+      createdAt: '${_todayDate()}T07:10:00Z',
     ),
     AttendanceModel(
       id: 3,
       studentId: 3,
       activityId: 2,
       studentName: 'Krishna Kumar',
-      activityName: 'Kirtan & Bhajan',
-      checkInTime: '${_todayDate()}T05:35:00Z',
+      activityName: 'Yoga',
+      checkInTime: '${_todayDate()}T06:05:00Z',
       checkOutTime: '${_todayDate()}T07:00:00Z',
-      createdAt: '${_todayDate()}T05:35:00Z',
+      createdAt: '${_todayDate()}T06:05:00Z',
     ),
     AttendanceModel(
       id: 4,
       studentId: 4,
       activityId: 2,
       studentName: 'Priya Nair',
-      activityName: 'Kirtan & Bhajan',
-      checkInTime: '${_todayDate()}T05:40:00Z',
+      activityName: 'Yoga',
+      checkInTime: '${_todayDate()}T06:10:00Z',
       checkOutTime: null,
-      createdAt: '${_todayDate()}T05:40:00Z',
+      createdAt: '${_todayDate()}T06:10:00Z',
     ),
     AttendanceModel(
       id: 5,
       studentId: 5,
-      activityId: 3,
+      activityId: 9,
       studentName: 'Govind Mishra',
-      activityName: 'Deity Worship (Puja)',
-      checkInTime: '${_todayDate()}T07:05:00Z',
+      activityName: 'Bharat Natiyam',
+      checkInTime: '${_todayDate()}T17:05:00Z',
       checkOutTime: null,
-      createdAt: '${_todayDate()}T07:05:00Z',
+      createdAt: '${_todayDate()}T17:05:00Z',
+    ),
+    AttendanceModel(
+      id: 6,
+      studentId: 6,
+      activityId: 6,
+      studentName: 'Meera Iyer',
+      activityName: 'Sanskrit',
+      checkInTime: '${_todayDate()}T16:05:00Z',
+      checkOutTime: '${_todayDate()}T17:00:00Z',
+      createdAt: '${_todayDate()}T16:05:00Z',
+    ),
+    AttendanceModel(
+      id: 7,
+      studentId: 7,
+      activityId: 5,
+      studentName: 'Balaram Singh',
+      activityName: 'Art & Craft',
+      checkInTime: '${_todayDate()}T10:05:00Z',
+      checkOutTime: '${_todayDate()}T11:30:00Z',
+      createdAt: '${_todayDate()}T10:05:00Z',
     ),
   ];
 
-  int _nextAttendanceId = 6;
+  int _nextAttendanceId = 8;
 
   static String _todayDate() {
     final now = DateTime.now();
@@ -468,14 +528,81 @@ class MockDataService {
     };
   }
 
+  Map<String, dynamic> getGuardDashboard() {
+    final today = _todayDate();
+    final todayVisitors =
+        _visitors.where((v) => v.checkInTime?.startsWith(today) ?? false).toList();
+    final checkIns = todayVisitors.length;
+    final checkOuts = todayVisitors.where((v) => v.checkOutTime != null).length;
+    final pending = checkIns - checkOuts;
+    return {
+      'total_visitors_today': checkIns,
+      'check_ins': checkIns,
+      'check_outs': checkOuts,
+      'pending_checkouts': pending,
+      'recent_logs': todayVisitors
+          .map((v) => {
+                'id': v.id,
+                'name': v.visitorName,
+                'phone': v.visitorPhone,
+                'reason': v.visitReason,
+                'student': v.studentName,
+                'check_in': v.checkInTime,
+                'check_out': v.checkOutTime,
+              })
+          .toList(),
+    };
+  }
+
   Map<String, dynamic> getTeacherDashboard() {
     final today = _todayDate();
-    final todayCount =
-        _attendance.where((a) => a.checkInTime?.startsWith(today) ?? false).length;
+    final todayAttendance =
+        _attendance.where((a) => a.checkInTime?.startsWith(today) ?? false).toList();
+    final presentToday = todayAttendance.length;
+    final totalStudents = _students.length;
+    final absentToday = totalStudents - presentToday;
+    final upcomingActivities = _activities.take(5).toList();
     return {
-      'today_attendance': todayCount,
-      'my_students': _students.length,
-      'my_activities': _activities.length,
+      'class_name': 'Class A – Devotees',
+      'total_students': totalStudents,
+      'present_today': presentToday,
+      'absent_today': absentToday < 0 ? 0 : absentToday,
+      'upcoming_activities': upcomingActivities
+          .map((a) => {'id': a.id, 'name': a.name, 'schedule': a.schedule})
+          .toList(),
+      'attendance_history': todayAttendance
+          .map((a) => {
+                'student': a.studentName,
+                'activity': a.activityName,
+                'check_in': a.checkInTime,
+                'check_out': a.checkOutTime,
+              })
+          .toList(),
+    };
+  }
+
+  Map<String, dynamic> getPrincipalDashboard() {
+    final today = _todayDate();
+    final todayAttendance =
+        _attendance.where((a) => a.checkInTime?.startsWith(today) ?? false).length;
+    final totalStudents = _students.length;
+    final attendancePct = totalStudents > 0
+        ? ((todayAttendance / totalStudents) * 100).round()
+        : 0;
+    return {
+      'total_classes': 6,
+      'total_students': totalStudents,
+      'total_teachers': 8,
+      'average_attendance_pct': attendancePct,
+      'total_activities_this_month': _activities.length,
+      'monthly_stats': [
+        {'month': 'Oct', 'attendance': 88},
+        {'month': 'Nov', 'attendance': 91},
+        {'month': 'Dec', 'attendance': 85},
+        {'month': 'Jan', 'attendance': 93},
+        {'month': 'Feb', 'attendance': 90},
+        {'month': 'Mar', 'attendance': attendancePct},
+      ],
     };
   }
 }
