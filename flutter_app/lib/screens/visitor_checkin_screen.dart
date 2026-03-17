@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/visitor_model.dart';
 import '../utils/constants.dart';
+import '../services/qr_service.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class VisitorCheckInScreen extends StatefulWidget {
   const VisitorCheckInScreen({super.key});
@@ -136,6 +138,76 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
             child: const Text('Check In'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showVisitorQr(VisitorModel visitor) {
+    final qrData = QrService.visitorQrData(visitor);
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(visitor.visitorName,
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold)),
+            if (visitor.visitReason != null) ...[
+              const SizedBox(height: 4),
+              Text(visitor.visitReason!,
+                  style:
+                      const TextStyle(color: AppColors.textSecondary)),
+            ],
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: const Color(0xFF7B1FA2).withAlpha(80)),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withAlpha(15), blurRadius: 8),
+                ],
+              ),
+              child: QrImageView(
+                data: qrData,
+                version: QrVersions.auto,
+                size: 180,
+                eyeStyle: const QrEyeStyle(
+                  eyeShape: QrEyeShape.square,
+                  color: Color(0xFF4A148C),
+                ),
+                dataModuleStyle: const QrDataModuleStyle(
+                  dataModuleShape: QrDataModuleShape.square,
+                  color: Color(0xFF7B1FA2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Visitor ID: ${visitor.id}',
+              style: const TextStyle(
+                  fontSize: 12, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
@@ -280,67 +352,84 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
   Widget _buildVisitorCard(VisitorModel visitor, {required bool isActive}) {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: isActive
-                  ? AppColors.krishnaOrange.withAlpha(30)
-                  : AppColors.textSecondary.withAlpha(30),
-              child: Text(
-                visitor.visitorName[0].toUpperCase(),
-                style: TextStyle(
-                  color: isActive
-                      ? AppColors.krishnaOrange
-                      : AppColors.textSecondary,
-                  fontWeight: FontWeight.bold,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _showVisitorQr(visitor),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: isActive
+                    ? AppColors.krishnaOrange.withAlpha(30)
+                    : AppColors.textSecondary.withAlpha(30),
+                child: Text(
+                  visitor.visitorName[0].toUpperCase(),
+                  style: TextStyle(
+                    color: isActive
+                        ? AppColors.krishnaOrange
+                        : AppColors.textSecondary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      visitor.visitorName,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    if (visitor.visitorPhone != null)
+                      Text(
+                        visitor.visitorPhone!,
+                        style: const TextStyle(
+                            color: AppColors.textSecondary, fontSize: 12),
+                      ),
+                    if (visitor.visitReason != null)
+                      Text(
+                        visitor.visitReason!,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    if (visitor.checkInTime != null)
+                      Text(
+                        'In: ${_formatTime(visitor.checkInTime!)}',
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textSecondary),
+                      ),
+                    if (visitor.checkOutTime != null)
+                      Text(
+                        'Out: ${_formatTime(visitor.checkOutTime!)}',
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textSecondary),
+                      ),
+                  ],
+                ),
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    visitor.visitorName,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 15),
+                  IconButton(
+                    icon: const Icon(Icons.qr_code,
+                        color: Color(0xFF7B1FA2), size: 20),
+                    tooltip: 'Show QR',
+                    onPressed: () => _showVisitorQr(visitor),
                   ),
-                  if (visitor.visitorPhone != null)
-                    Text(
-                      visitor.visitorPhone!,
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 12),
-                    ),
-                  if (visitor.visitReason != null)
-                    Text(
-                      visitor.visitReason!,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  if (visitor.checkInTime != null)
-                    Text(
-                      'In: ${_formatTime(visitor.checkInTime!)}',
-                      style: const TextStyle(
-                          fontSize: 11, color: AppColors.textSecondary),
-                    ),
-                  if (visitor.checkOutTime != null)
-                    Text(
-                      'Out: ${_formatTime(visitor.checkOutTime!)}',
-                      style: const TextStyle(
-                          fontSize: 11, color: AppColors.textSecondary),
+                  if (isActive)
+                    TextButton(
+                      onPressed: () => _handleCheckOut(visitor),
+                      child: const Text('Check Out',
+                          style: TextStyle(
+                              color: AppColors.krishnaOrange,
+                              fontSize: 12)),
                     ),
                 ],
               ),
-            ),
-            if (isActive)
-              TextButton(
-                onPressed: () => _handleCheckOut(visitor),
-                child: const Text('Check Out',
-                    style: TextStyle(color: AppColors.krishnaOrange)),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
