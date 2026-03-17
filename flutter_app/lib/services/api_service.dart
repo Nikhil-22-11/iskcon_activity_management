@@ -499,4 +499,66 @@ class ApiService {
       return {'data': MockDataService().getPrincipalDashboard()};
     }
   }
+
+  // ──────────────────── Enrollments ────────────────────
+
+  Future<List<Map<String, dynamic>>> getEnrolledStudents(int activityId) async {
+    final token = await getToken();
+    if (_isMockToken(token)) {
+      return MockDataService().getEnrolledStudents(activityId);
+    }
+    try {
+      final data = await _get('${AppUrls.activities}/$activityId/students');
+      return _extractList(data, 'students')
+          .map((e) => e as Map<String, dynamic>)
+          .toList();
+    } catch (_) {
+      return MockDataService().getEnrolledStudents(activityId);
+    }
+  }
+
+  // ──────────────────── QR Scan (Guard) ────────────────────
+
+  Future<Map<String, dynamic>> processQrScan(Map<String, dynamic> qrData) async {
+    final token = await getToken();
+    if (_isMockToken(token)) {
+      return MockDataService().addQrScan(qrData);
+    }
+    try {
+      final data = await _post('${AppUrls.attendance}/qr-checkin', qrData);
+      return data['data'] as Map<String, dynamic>? ?? data;
+    } catch (_) {
+      return MockDataService().addQrScan(qrData);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getQrScanHistory() async {
+    final token = await getToken();
+    if (_isMockToken(token)) {
+      return MockDataService().getQrScanHistory();
+    }
+    try {
+      final data = await _get('${AppUrls.attendance}/scan-history');
+      return _extractList(data, 'scans')
+          .map((e) => e as Map<String, dynamic>)
+          .toList();
+    } catch (_) {
+      return MockDataService().getQrScanHistory();
+    }
+  }
+
+  // ──────────────────── Admissions ────────────────────
+
+  Future<Map<String, dynamic>> submitAdmission(Map<String, dynamic> data) async {
+    final token = await getToken();
+    if (_isMockToken(token)) {
+      return MockDataService().addAdmission(data);
+    }
+    try {
+      final res = await _post('/admissions', data);
+      return res['data'] as Map<String, dynamic>? ?? res;
+    } catch (_) {
+      return MockDataService().addAdmission(data);
+    }
+  }
 }
