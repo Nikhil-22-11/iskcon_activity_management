@@ -113,7 +113,31 @@ CREATE TABLE IF NOT EXISTS visitors (
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
+-- Admissions table (new student admission requests from the Flutter form)
+CREATE TABLE IF NOT EXISTS admissions (
+    id SERIAL PRIMARY KEY,
+    student_name VARCHAR(100) NOT NULL,
+    dob DATE,
+    school VARCHAR(150),
+    gender VARCHAR(10) CHECK (gender IN ('Male', 'Female', 'Other')),
+    mother_contact VARCHAR(15),
+    father_contact VARCHAR(15),
+    hear_about_us VARCHAR(50) DEFAULT 'Friends',
+    payment_period VARCHAR(20) DEFAULT 'Monthly' CHECK (payment_period IN ('Monthly', 'Quarterly', 'Yearly')),
+    payment_mode VARCHAR(10) DEFAULT 'Cash' CHECK (payment_mode IN ('Cash', 'Online')),
+    transaction_id VARCHAR(100),
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    submitted_by INTEGER REFERENCES users(id),
+    reviewed_by INTEGER REFERENCES users(id),
+    reviewed_at TIMESTAMP,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
 -- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_admissions_status ON admissions(status);
+CREATE INDEX IF NOT EXISTS idx_admissions_created_at ON admissions(created_at);
 CREATE INDEX IF NOT EXISTS idx_students_student_id ON students(student_id);
 CREATE INDEX IF NOT EXISTS idx_students_name ON students(name);
 CREATE INDEX IF NOT EXISTS idx_attendance_student_id ON attendance(student_id);

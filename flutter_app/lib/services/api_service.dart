@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
@@ -23,6 +24,7 @@ class ApiService {
   static const String _mockToken = 'mock_token_iskcon_dev';
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
+  static const String _admissionsKey = 'admissions_data';
 
   String? _token;
   UserModel? _currentUser;
@@ -549,16 +551,47 @@ class ApiService {
 
   // ──────────────────── Admissions ────────────────────
 
+  /// Persists [admission] to SharedPreferences so it survives an app restart.
+  Future<void> _persistAdmission(Map<String, dynamic> admission) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_admissionsKey) ?? '[]';
+      List<Map<String, dynamic>> list;
+      try {
+        list = (jsonDecode(raw) as List<dynamic>)
+            .map((e) => e as Map<String, dynamic>)
+            .toList();
+      } catch (_) {
+        // Stored JSON was corrupted – start fresh
+        list = [];
+      }
+      list.add(admission);
+      await prefs.setString(_admissionsKey, jsonEncode(list));
+      debugPrint(
+          '[AdmissionSaved] id=${admission['id']} '
+          'student=${admission['student_name']} '
+          'date=${admission['admissionDate']}');
+    } catch (e) {
+      debugPrint('[AdmissionSaved] WARNING: could not persist admission – $e');
+    }
+  }
+
   Future<Map<String, dynamic>> submitAdmission(Map<String, dynamic> data) async {
     final token = await getToken();
     if (_isMockToken(token)) {
-      return MockDataService().addAdmission(data);
+      final admission = MockDataService().addAdmission(data);
+      await _persistAdmission(admission);
+      return admission;
     }
     try {
       final res = await _post('/admissions', data);
-      return res['data'] as Map<String, dynamic>? ?? res;
+      final admission = res['data'] as Map<String, dynamic>? ?? res;
+      await _persistAdmission(admission);
+      return admission;
     } catch (_) {
-      return MockDataService().addAdmission(data);
+      final admission = MockDataService().addAdmission(data);
+      await _persistAdmission(admission);
+      return admission;
     }
   }
 }

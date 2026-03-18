@@ -10,6 +10,7 @@ const attendanceRoutes = require('./routes/attendance.routes');
 const enquiryRoutes = require('./routes/enquiries.routes');
 const visitorRoutes = require('./routes/visitors.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const admissionRoutes = require('./routes/admissions.routes');
 const { errorHandler, notFound } = require('./middleware/errorHandler.middleware');
 
 const app = express();
@@ -60,6 +61,7 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/enquiries', enquiryRoutes);
 app.use('/api/visitors', visitorRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/admissions', admissionRoutes);
 
 // 404 handler
 app.use(notFound);
