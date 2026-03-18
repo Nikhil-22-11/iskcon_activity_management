@@ -7,6 +7,7 @@ import '../screens/student_list_screen.dart';
 import '../screens/activity_list_screen.dart';
 import '../screens/attendance_screen.dart';
 import '../screens/visitor_checkin_screen.dart';
+import '../screens/data_inspector_screen.dart';
 
 class AppRoutes {
   static const String login = '/';
@@ -17,6 +18,7 @@ class AppRoutes {
   static const String activityList = '/activities';
   static const String attendance = '/attendance';
   static const String visitorCheckIn = '/visitor-checkin';
+  static const String dataInspector = '/data-inspector';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -37,6 +39,9 @@ class AppRoutes {
       case visitorCheckIn:
         return MaterialPageRoute(
             builder: (_) => const VisitorCheckInScreen());
+      case dataInspector:
+        return MaterialPageRoute(
+            builder: (_) => const DataInspectorScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(

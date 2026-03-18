@@ -64,6 +64,12 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData),
           IconButton(
+            icon: const Icon(Icons.storage),
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AppRoutes.dataInspector),
+            tooltip: 'Data Inspector',
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             onPressed: _logout,
             tooltip: AppStrings.logout,
