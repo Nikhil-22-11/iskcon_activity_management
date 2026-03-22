@@ -1,0 +1,50 @@
+name: Build & Package Flutter App ZIP
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  package:
+    name: Package flutter_app as ZIP artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.6'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        working-directory: flutter_app
+        run: flutter pub get
+
+      - name: Analyze code
+        working-directory: flutter_app
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        working-directory: flutter_app
+        run: flutter test --no-pub
+
+      - name: Create ZIP of flutter_app source
+        run: |
+          zip -r flutter-app-source.zip flutter_app \
+            --exclude "flutter_app/.dart_tool/*" \
+            --exclude "flutter_app/build/*" \
+            --exclude "flutter_app/.flutter-plugins-dependencies" \
+            --exclude "flutter_app/.flutter-plugins"
+
+      - name: Upload ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-app-source
+          path: flutter-app-source.zip
+          retention-days: 30
