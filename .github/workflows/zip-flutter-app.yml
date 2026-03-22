@@ -10,6 +10,8 @@ jobs:
   package:
     name: Package flutter_app as ZIP artifact
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
