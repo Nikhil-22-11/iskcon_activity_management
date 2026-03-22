@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import '../services/firestore_service.dart';
 import '../utils/constants.dart';
 import '../navigation/routes.dart';
 
@@ -32,7 +32,9 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null;
     });
     try {
-      final user = await ApiService().login(
+      // FirestoreService.signIn handles Firebase Auth with automatic fallback
+      // to mock credentials when Firebase is not yet configured.
+      final user = await FirestoreService().signIn(
         _emailController.text.trim(),
         _passwordController.text,
       );
@@ -48,11 +50,8 @@ class _LoginScreenState extends State<LoginScreen> {
         route = AppRoutes.guardDashboard;
       }
       Navigator.of(context).pushReplacementNamed(route);
-    } on ApiException catch (e) {
-      setState(() => _errorMessage = e.message);
     } catch (e) {
-      setState(() =>
-          _errorMessage = 'Connection failed. Please check backend is running.');
+      setState(() => _errorMessage = e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

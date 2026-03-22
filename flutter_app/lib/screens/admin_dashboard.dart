@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/firestore_service.dart';
 import '../utils/constants.dart';
 import '../navigation/routes.dart';
 
@@ -24,7 +25,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Future<void> _loadData() async {
     try {
       final user = await ApiService().getCurrentUser();
-      final stats = await ApiService().getDashboardStats();
+      final stats = await FirestoreService().getDashboardStats();
       if (mounted) {
         setState(() {
           _userName = user?.name ?? user?.email ?? 'Admin';
@@ -40,6 +41,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Future<void> _logout() async {
+    await FirestoreService().signOut();
     await ApiService().logout();
     if (!mounted) return;
     Navigator.of(context).pushReplacementNamed(AppRoutes.login);

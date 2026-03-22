@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/api_service.dart';
+import '../services/firestore_service.dart';
 import '../utils/constants.dart';
 import '../navigation/routes.dart';
 import 'admission_form.dart';
@@ -27,7 +28,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     setState(() => _isLoading = true);
     try {
       final user = await ApiService().getCurrentUser();
-      final result = await ApiService().getTeacherDashboard();
+      final result = await FirestoreService().getTeacherDashboard();
       if (mounted) {
         setState(() {
           _userName = user?.name ?? user?.email ?? 'Teacher';
@@ -41,6 +42,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   }
 
   Future<void> _logout() async {
+    await FirestoreService().signOut();
     await ApiService().logout();
     if (!mounted) return;
     Navigator.of(context).pushReplacementNamed(AppRoutes.login);
@@ -584,7 +586,7 @@ class _ActivityStudentsSheetState extends State<_ActivityStudentsSheet> {
 
   Future<void> _loadStudents() async {
     try {
-      final result = await ApiService().getEnrolledStudents(widget.activityId);
+      final result = await FirestoreService().getEnrolledStudents(widget.activityId);
       if (mounted) {
         setState(() {
           _students = result;

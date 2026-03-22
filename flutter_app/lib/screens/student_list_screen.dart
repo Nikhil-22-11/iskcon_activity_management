@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/firestore_service.dart';
 import '../models/student_model.dart';
 import '../utils/constants.dart';
 import '../services/qr_service.dart';
@@ -38,7 +39,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
       _error = null;
     });
     try {
-      final students = await ApiService().getStudents();
+      final students = await FirestoreService().getStudents();
       if (mounted) {
         setState(() {
           _students = students;
@@ -165,9 +166,14 @@ class _StudentListScreenState extends State<StudentListScreen> {
                     'address': addressCtrl.text.trim(),
                 };
                 if (isEdit) {
-                  await ApiService().updateStudent(existing.id, data);
+                  final docId = existing.docId;
+                  if (docId != null) {
+                    await FirestoreService().updateStudent(docId, data);
+                  } else {
+                    await ApiService().updateStudent(existing.id, data);
+                  }
                 } else {
-                  await ApiService().createStudent(data);
+                  await FirestoreService().createStudent(data);
                 }
                 _loadStudents();
               } catch (e) {
@@ -478,7 +484,11 @@ class _StudentListScreenState extends State<StudentListScreen> {
                         );
                         if (confirmed == true) {
                           try {
-                            await ApiService().deleteStudent(student.id);
+                            if (student.docId != null) {
+                              await FirestoreService().deleteStudent(student.docId!);
+                            } else {
+                              await ApiService().deleteStudent(student.id);
+                            }
                             _loadStudents();
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(

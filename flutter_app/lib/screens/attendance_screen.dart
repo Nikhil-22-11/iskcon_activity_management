@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../services/api_service.dart';
+import '../services/firestore_service.dart';
 import '../services/qr_service.dart';
 import '../models/attendance_model.dart';
 import '../models/student_model.dart';
@@ -37,9 +38,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     try {
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
       final results = await Future.wait([
-        ApiService().getAttendanceByDate(dateStr),
-        ApiService().getStudents(),
-        ApiService().getActivities(),
+        FirestoreService().getAttendanceByDate(dateStr),
+        FirestoreService().getStudents(),
+        FirestoreService().getActivities(),
       ]);
       if (mounted) {
         setState(() {
@@ -112,8 +113,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   : () async {
                       Navigator.pop(ctx);
                       try {
-                        await ApiService().checkIn(
-                            selectedStudent!.id, selectedActivity!.id);
+                        await FirestoreService().checkIn(
+                            selectedStudent!.id, selectedActivity!.id,
+                            studentName: selectedStudent!.name,
+                            activityName: selectedActivity!.name);
                         _loadData();
                         if (mounted) {
                           _showAttendanceQr(selectedStudent!, selectedActivity!);

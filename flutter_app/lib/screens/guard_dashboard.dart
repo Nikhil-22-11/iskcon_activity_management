@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/api_service.dart';
+import '../services/firestore_service.dart';
 import '../utils/constants.dart';
 import '../navigation/routes.dart';
 
@@ -39,7 +40,7 @@ class _GuardDashboardState extends State<GuardDashboard> {
     setState(() => _isLoading = true);
     try {
       final user = await ApiService().getCurrentUser();
-      final history = await ApiService().getQrScanHistory();
+      final history = await FirestoreService().getQrScanHistory();
       if (mounted) {
         setState(() {
           _userName = user?.name ?? 'Guard';
@@ -53,6 +54,7 @@ class _GuardDashboardState extends State<GuardDashboard> {
   }
 
   Future<void> _logout() async {
+    await FirestoreService().signOut();
     await ApiService().logout();
     if (!mounted) return;
     Navigator.of(context).pushReplacementNamed(AppRoutes.login);
@@ -77,7 +79,7 @@ class _GuardDashboardState extends State<GuardDashboard> {
     _mockPayloadIndex++;
 
     try {
-      final result = await ApiService().processQrScan(Map<String, dynamic>.from(payload));
+      final result = await FirestoreService().processQrScan(Map<String, dynamic>.from(payload));
       if (mounted) {
         Navigator.of(context).pop(); // close scanning dialog
         setState(() {
