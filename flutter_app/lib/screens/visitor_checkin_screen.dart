@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/firestore_service.dart';
 import '../models/visitor_model.dart';
 import '../utils/constants.dart';
 import '../services/qr_service.dart';
@@ -30,7 +31,7 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
       _error = null;
     });
     try {
-      final visitors = await ApiService().getVisitors();
+      final visitors = await FirestoreService().getVisitors();
       if (mounted) {
         setState(() {
           _visitors = visitors;
@@ -106,7 +107,7 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
               if (nameCtrl.text.trim().isEmpty) return;
               Navigator.pop(ctx);
               try {
-                await ApiService().visitorCheckIn({
+                await FirestoreService().visitorCheckIn({
                   'visitor_name': nameCtrl.text.trim(),
                   if (phoneCtrl.text.isNotEmpty)
                     'visitor_phone': phoneCtrl.text.trim(),
@@ -230,7 +231,12 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
     );
     if (confirmed == true) {
       try {
-        await ApiService().visitorCheckOut(visitor.id);
+        final docId = visitor.docId;
+        if (docId != null) {
+          await FirestoreService().visitorCheckOut(docId);
+        } else {
+          await ApiService().visitorCheckOut(visitor.id);
+        }
         _loadVisitors();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/firestore_service.dart';
 import '../models/activity_model.dart';
 import '../utils/constants.dart';
 import '../services/qr_service.dart';
@@ -29,7 +30,7 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
       _error = null;
     });
     try {
-      final activities = await ApiService().getActivities();
+      final activities = await FirestoreService().getActivities();
       if (mounted) {
         setState(() {
           _activities = activities;
@@ -129,9 +130,14 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
                     'age_group': ageGroupCtrl.text.trim(),
                 };
                 if (isEdit) {
-                  await ApiService().updateActivity(existing.id, data);
+                  final docId = existing.docId;
+                  if (docId != null) {
+                    await FirestoreService().updateActivity(docId, data);
+                  } else {
+                    await ApiService().updateActivity(existing.id, data);
+                  }
                 } else {
-                  await ApiService().createActivity(data);
+                  await FirestoreService().createActivity(data);
                 }
                 _loadActivities();
               } catch (e) {
@@ -390,7 +396,11 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
                         );
                         if (confirmed == true) {
                           try {
-                            await ApiService().deleteActivity(activity.id);
+                            if (activity.docId != null) {
+                              await FirestoreService().deleteActivity(activity.docId!);
+                            } else {
+                              await ApiService().deleteActivity(activity.id);
+                            }
                             _loadActivities();
                           } catch (e) {
                             if (mounted) {

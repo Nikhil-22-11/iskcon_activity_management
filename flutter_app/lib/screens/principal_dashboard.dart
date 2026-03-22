@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/firestore_service.dart';
 import '../utils/constants.dart';
+import '../utils/excel_export.dart';
 import '../navigation/routes.dart';
 import 'admission_form.dart';
 
@@ -36,7 +38,7 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
     setState(() => _isLoading = true);
     try {
       final user = await ApiService().getCurrentUser();
-      final result = await ApiService().getPrincipalDashboard();
+      final result = await FirestoreService().getPrincipalDashboard();
       if (mounted) {
         setState(() {
           _userName = user?.name ?? 'Principal';
@@ -50,6 +52,7 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
   }
 
   Future<void> _logout() async {
+    await FirestoreService().signOut();
     await ApiService().logout();
     if (!mounted) return;
     Navigator.of(context).pushReplacementNamed(AppRoutes.login);
@@ -386,7 +389,8 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
           _sectionTitle('Generate Reports'),
           const SizedBox(height: 12),
           _reportButton(Icons.picture_as_pdf, 'Monthly Attendance Report', AppColors.error),
-          _reportButton(Icons.table_chart, 'Export Attendance CSV', AppColors.success),
+          _reportButton(Icons.table_chart, 'Export Attendance (Excel)', AppColors.success,
+              onExport: _exportAttendance),
         ],
       ),
     );
@@ -664,9 +668,14 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
           const SizedBox(height: 20),
           _sectionTitle('Reports'),
           const SizedBox(height: 12),
-          _reportButton(Icons.people, 'Generate Student Report', AppColors.krishnaBlue),
-          _reportButton(Icons.assignment_turned_in, 'Generate Attendance Report', AppColors.krishnaOrange),
-          _reportButton(Icons.currency_rupee, 'Generate Financial Report', AppColors.success),
+          _reportButton(Icons.people, 'Export Students (Excel)', AppColors.krishnaBlue,
+              onExport: _exportStudents),
+          _reportButton(Icons.assignment_turned_in, 'Export Attendance (Excel)',
+              AppColors.krishnaOrange,
+              onExport: _exportAttendance),
+          _reportButton(Icons.currency_rupee, 'Export Financial Report (Excel)',
+              AppColors.success,
+              onExport: _exportFinancial),
           _reportButton(Icons.table_chart, 'Export to CSV', const Color(0xFF37474F)),
         ],
       ),
@@ -804,7 +813,8 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
     );
   }
 
-  Widget _reportButton(IconData icon, String label, Color color) {
+  Widget _reportButton(IconData icon, String label, Color color,
+      {Future<void> Function()? onExport}) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -815,7 +825,7 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
         ),
         title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
         trailing: const Icon(Icons.download, color: AppColors.textSecondary, size: 18),
-        onTap: () {
+        onTap: onExport ?? () {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('$label \u2013 feature coming soon!'),
@@ -826,6 +836,74 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
         },
       ),
     );
+  }
+
+  Future<void> _exportStudents() async {
+    try {
+      final students = await FirestoreService().getStudents();
+      final path = await ExcelExport.exportStudents(students);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Students exported to $path'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Export failed: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _exportAttendance() async {
+    try {
+      final today = DateTime.now().toIso8601String().split('T').first;
+      final records = await FirestoreService().getAttendanceByDate(today);
+      final path =
+          await ExcelExport.exportAttendance(records, dateLabel: today);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Attendance exported to $path'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Export failed: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _exportFinancial() async {
+    try {
+      final payments = await FirestoreService().getPayments();
+      final path = await ExcelExport.exportFinancialReport(payments);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Financial report exported to $path'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Export failed: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
+import '../services/firestore_service.dart';
 import '../utils/constants.dart';
 
 class AdmissionForm extends StatefulWidget {
@@ -83,7 +84,7 @@ class _AdmissionFormState extends State<AdmissionForm> {
         if (_paymentMode == 'Online')
           'transaction_id': _transactionIdCtrl.text.trim(),
       };
-      await ApiService().submitAdmission(data);
+      await FirestoreService().submitAdmission(data);
       if (!mounted) return;
       _showSuccess();
     } catch (e) {
