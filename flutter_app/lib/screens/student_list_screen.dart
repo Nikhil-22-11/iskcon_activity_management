@@ -172,6 +172,16 @@ class _StudentListScreenState extends State<StudentListScreen> {
                   await ApiService().createStudent(data);
                 }
                 _loadStudents();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(isEdit
+                          ? 'Student updated successfully'
+                          : 'Student added successfully'),
+                      backgroundColor: AppColors.success,
+                    ),
+                  );
+                }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
