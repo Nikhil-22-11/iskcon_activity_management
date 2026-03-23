@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/firestore_service.dart';
 import '../models/student_model.dart';
 import '../utils/constants.dart';
 import '../services/qr_service.dart';
@@ -159,17 +160,14 @@ class _StudentListScreenState extends State<StudentListScreen> {
                 };
 
                 if (isEdit) {
-                  // FIX: Use docId (Firestore string ID) for updates.
-                  // If docId is null the student came from mock data — create instead.
                   final docId = existing.docId;
                   if (docId != null && docId.isNotEmpty) {
-                    await ApiService().updateStudent(docId, data);
+                    await FirestoreService().updateStudent(docId, data);
                   } else {
-                    // No docId means it was mock data — save as new Firestore doc
-                    await ApiService().createStudent(data);
+                    await FirestoreService().createStudent(data);
                   }
                 } else {
-                  await ApiService().createStudent(data);
+                  await FirestoreService().createStudent(data);
                 }
                 _loadStudents();
                 if (mounted) {
@@ -483,10 +481,9 @@ class _StudentListScreenState extends State<StudentListScreen> {
                         );
                         if (confirmed == true) {
                           try {
-                            // FIX: Use docId for Firestore delete
                             final docId = student.docId;
                             if (docId != null && docId.isNotEmpty) {
-                              await ApiService().deleteStudent(docId);
+                              await FirestoreService().deleteStudent(docId);
                             } else {
                               throw Exception(
                                   'Cannot delete: student has no Firestore ID');
