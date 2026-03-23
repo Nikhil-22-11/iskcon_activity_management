@@ -1,4 +1,6 @@
 class StudentModel {
+  // FIX: docId is the PRIMARY identifier for Firestore.
+  // `id` is kept for backward compatibility with mock data only (defaults to 0).
   final int id;
   final String? docId;
   final String name;
@@ -11,7 +13,7 @@ class StudentModel {
   final String? createdAt;
 
   const StudentModel({
-    required this.id,
+    this.id = 0,
     this.docId,
     required this.name,
     this.email,
@@ -25,7 +27,7 @@ class StudentModel {
 
   factory StudentModel.fromJson(Map<String, dynamic> json) {
     return StudentModel(
-      id: json['id'] as int,
+      id: (json['id'] as int?) ?? 0,
       docId: json['docId'] as String?,
       name: json['name'] as String,
       email: json['email'] as String?,

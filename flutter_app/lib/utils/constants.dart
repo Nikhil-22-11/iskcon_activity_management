@@ -30,7 +30,12 @@ class AppStrings {
   static const String visitors = 'Visitors';
 }
 
+// FIX: AppUrls is kept only for reference / future use.
+// All data now goes through FirestoreService directly — no HTTP calls needed.
+// The Node.js backend (localhost:5000) is no longer required.
 class AppUrls {
+  // Keep these in case any legacy code still references them,
+  // but they are not actively used anymore.
   static const String baseUrl = 'http://127.0.0.1:5000/api';
   static const String login = '/auth/login';
   static const String students = '/students';

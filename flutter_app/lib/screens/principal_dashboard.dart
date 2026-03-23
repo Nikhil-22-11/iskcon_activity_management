@@ -37,7 +37,7 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final user = await ApiService().getCurrentUser();
+      final user = ApiService().currentUser;
       final result = await FirestoreService().getPrincipalDashboard();
       if (mounted) {
         setState(() {
@@ -126,10 +126,14 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
             mainAxisSpacing: 12,
             childAspectRatio: 1.3,
             children: [
-              _statCard(Icons.people_outline, 'Total Students', '$totalStudents', AppColors.krishnaBlue),
-              _statCard(Icons.sports_outlined, 'Activities', '$totalActivities', AppColors.krishnaOrange),
-              _statCard(Icons.person_outline, 'Teachers', '$totalTeachers', const Color(0xFF7B1FA2)),
-              _statCard(Icons.today, "Today's Attendance", '$todayAttendance', AppColors.success),
+              _statCard(Icons.people_outline, 'Total Students',
+                  '$totalStudents', AppColors.krishnaBlue),
+              _statCard(Icons.sports_outlined, 'Activities', '$totalActivities',
+                  AppColors.krishnaOrange),
+              _statCard(Icons.person_outline, 'Teachers', '$totalTeachers',
+                  const Color(0xFF7B1FA2)),
+              _statCard(Icons.today, "Today's Attendance", '$todayAttendance',
+                  AppColors.success),
             ],
           ),
           const SizedBox(height: 20),
@@ -162,7 +166,8 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                       value: (avgPct as num) / 100,
                       minHeight: 14,
                       backgroundColor: AppColors.lightBlue,
-                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.success),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.success),
                     ),
                   ),
                 ],
@@ -211,7 +216,8 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
             final name = m['name'] as String? ?? '';
             final roll = m['roll'] as String? ?? '';
             final q = _studentSearch.toLowerCase();
-            return name.toLowerCase().contains(q) || roll.toLowerCase().contains(q);
+            return name.toLowerCase().contains(q) ||
+                roll.toLowerCase().contains(q);
           }).toList();
 
     return Column(
@@ -225,10 +231,12 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                   onChanged: (v) => setState(() => _studentSearch = v),
                   decoration: InputDecoration(
                     hintText: 'Search students...',
-                    prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                    prefixIcon: const Icon(Icons.search,
+                        color: AppColors.textSecondary),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -238,7 +246,8 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: AppColors.krishnaBlue,
                   borderRadius: BorderRadius.circular(10),
@@ -275,13 +284,15 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                       ),
                     ),
                   ),
-                  title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  title: Text(name,
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: Text(
                     'Roll: ${s['roll'] ?? ''}  •  Activities: ${s['enrolled_activities'] ?? 0}',
                     style: const TextStyle(fontSize: 12),
                   ),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: AppColors.success.withAlpha(20),
                       borderRadius: BorderRadius.circular(10),
@@ -388,8 +399,10 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
           const SizedBox(height: 20),
           _sectionTitle('Generate Reports'),
           const SizedBox(height: 12),
-          _reportButton(Icons.picture_as_pdf, 'Monthly Attendance Report', AppColors.error),
-          _reportButton(Icons.table_chart, 'Export Attendance (Excel)', AppColors.success,
+          _reportButton(Icons.picture_as_pdf, 'Monthly Attendance Report',
+              AppColors.error),
+          _reportButton(
+              Icons.table_chart, 'Export Attendance (Excel)', AppColors.success,
               onExport: _exportAttendance),
         ],
       ),
@@ -416,12 +429,14 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                   Expanded(
                     child: Text(
                       a['name'] as String? ?? '',
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 13),
                     ),
                   ),
                   Text(
                     '$enrolled / $capacity',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -432,7 +447,8 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                   value: pct,
                   minHeight: 8,
                   backgroundColor: AppColors.lightBlue,
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.krishnaOrange),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.krishnaOrange),
                 ),
               ),
             ],
@@ -488,18 +504,23 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                     Expanded(
                       child: Text(
                         a['name'] as String? ?? '',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 15),
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
                         color: color.withAlpha(20),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         '$enrolled enrolled',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: color),
                       ),
                     ),
                   ],
@@ -507,12 +528,14 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    const Icon(Icons.schedule, size: 14, color: AppColors.textSecondary),
+                    const Icon(Icons.schedule,
+                        size: 14, color: AppColors.textSecondary),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         a['schedule'] as String? ?? '',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary),
                       ),
                     ),
                   ],
@@ -520,17 +543,20 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.person_outline, size: 14, color: AppColors.textSecondary),
+                    const Icon(Icons.person_outline,
+                        size: 14, color: AppColors.textSecondary),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         a['teacher'] as String? ?? '',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary),
                       ),
                     ),
                     Text(
                       'Capacity: $capacity',
-                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                      style: const TextStyle(
+                          fontSize: 11, color: AppColors.textSecondary),
                     ),
                   ],
                 ),
@@ -561,7 +587,8 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
     final paymentCash = (financial['payment_cash'] as num?)?.toInt() ?? 0;
     final paymentOnline = (financial['payment_online'] as num?)?.toInt() ?? 0;
     final pendingPayments = financial['pending_payments'] ?? 0;
-    final revenueByPeriod = (financial['revenue_by_period'] as List<dynamic>?) ?? [];
+    final revenueByPeriod =
+        (financial['revenue_by_period'] as List<dynamic>?) ?? [];
     final total = paymentCash + paymentOnline;
 
     return SingleChildScrollView(
@@ -579,10 +606,14 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
             mainAxisSpacing: 12,
             childAspectRatio: 1.3,
             children: [
-              _statCard(Icons.people_alt_outlined, 'Admissions\nThis Month', '$admissionsThisMonth', AppColors.krishnaBlue),
-              _statCard(Icons.currency_rupee, 'Total Revenue', '\u20b9$revenueMonthly', AppColors.success),
-              _statCard(Icons.money, 'Cash Payments', '$paymentCash', AppColors.krishnaOrange),
-              _statCard(Icons.phone_android, 'Online Payments', '$paymentOnline', const Color(0xFF7B1FA2)),
+              _statCard(Icons.people_alt_outlined, 'Admissions\nThis Month',
+                  '$admissionsThisMonth', AppColors.krishnaBlue),
+              _statCard(Icons.currency_rupee, 'Total Revenue',
+                  '\u20b9$revenueMonthly', AppColors.success),
+              _statCard(Icons.money, 'Cash Payments', '$paymentCash',
+                  AppColors.krishnaOrange),
+              _statCard(Icons.phone_android, 'Online Payments',
+                  '$paymentOnline', const Color(0xFF7B1FA2)),
             ],
           ),
           if ((pendingPayments as num) > 0) ...[
@@ -596,11 +627,13 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber, color: AppColors.error, size: 20),
+                  const Icon(Icons.warning_amber,
+                      color: AppColors.error, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     '$pendingPayments pending payments',
-                    style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                        color: AppColors.error, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -626,10 +659,13 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(period, style: const TextStyle(fontWeight: FontWeight.w600)),
+                            Text(period,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600)),
                             Text(
                               '$count students  •  \u20b9$revenue',
-                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              style: const TextStyle(
+                                  fontSize: 12, color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -640,7 +676,8 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
                             value: revenue > 0 ? revenue / 12000 : 0,
                             minHeight: 10,
                             backgroundColor: AppColors.lightBlue,
-                            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.krishnaBlue),
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                                AppColors.krishnaBlue),
                           ),
                         ),
                       ],
@@ -658,9 +695,11 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _paymentModeBar('Cash', paymentCash, total, AppColors.krishnaOrange),
+                  _paymentModeBar(
+                      'Cash', paymentCash, total, AppColors.krishnaOrange),
                   const SizedBox(height: 10),
-                  _paymentModeBar('Online', paymentOnline, total, const Color(0xFF7B1FA2)),
+                  _paymentModeBar(
+                      'Online', paymentOnline, total, const Color(0xFF7B1FA2)),
                 ],
               ),
             ),
@@ -668,7 +707,8 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
           const SizedBox(height: 20),
           _sectionTitle('Reports'),
           const SizedBox(height: 12),
-          _reportButton(Icons.people, 'Export Students (Excel)', AppColors.krishnaBlue,
+          _reportButton(
+              Icons.people, 'Export Students (Excel)', AppColors.krishnaBlue,
               onExport: _exportStudents),
           _reportButton(Icons.assignment_turned_in, 'Export Attendance (Excel)',
               AppColors.krishnaOrange,
@@ -676,7 +716,8 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
           _reportButton(Icons.currency_rupee, 'Export Financial Report (Excel)',
               AppColors.success,
               onExport: _exportFinancial),
-          _reportButton(Icons.table_chart, 'Export to CSV', const Color(0xFF37474F)),
+          _reportButton(
+              Icons.table_chart, 'Export to CSV', const Color(0xFF37474F)),
         ],
       ),
     );
@@ -690,10 +731,13 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+            Text(label,
+                style:
+                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
             Text(
               '$value (${(pct * 100).round()}%)',
-              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style:
+                  const TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -781,9 +825,12 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
             const SizedBox(height: 6),
             Text(
               value,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
+              style: TextStyle(
+                  fontSize: 22, fontWeight: FontWeight.bold, color: color),
             ),
-            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            Text(label,
+                style: const TextStyle(
+                    fontSize: 11, color: AppColors.textSecondary)),
           ],
         ),
       ),
@@ -802,7 +849,8 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: color.withAlpha(30), shape: BoxShape.circle),
+          decoration:
+              BoxDecoration(color: color.withAlpha(30), shape: BoxShape.circle),
           child: Icon(icon, color: color),
         ),
         title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -820,20 +868,24 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: color.withAlpha(25), shape: BoxShape.circle),
+          decoration:
+              BoxDecoration(color: color.withAlpha(25), shape: BoxShape.circle),
           child: Icon(icon, color: color, size: 20),
         ),
-        title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-        trailing: const Icon(Icons.download, color: AppColors.textSecondary, size: 18),
-        onTap: onExport ?? () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$label \u2013 feature coming soon!'),
-              backgroundColor: AppColors.krishnaBlue,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        },
+        title: Text(label,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+        trailing: const Icon(Icons.download,
+            color: AppColors.textSecondary, size: 18),
+        onTap: onExport ??
+            () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('$label \u2013 feature coming soon!'),
+                  backgroundColor: AppColors.krishnaBlue,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
       ),
     );
   }
@@ -906,4 +958,3 @@ class _PrincipalDashboardState extends State<PrincipalDashboard>
     }
   }
 }
-

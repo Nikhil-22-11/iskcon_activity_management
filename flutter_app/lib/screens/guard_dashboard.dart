@@ -21,12 +21,48 @@ class _GuardDashboardState extends State<GuardDashboard> {
 
   // Rotating mock QR payloads for simulated scanning
   static const List<Map<String, dynamic>> _mockQrPayloads = [
-    {'studentId': 2, 'studentName': 'Radha Patel', 'activityId': 1, 'activityName': 'Swimming', 'timestamp': '2026-03-17T07:10:00Z'},
-    {'studentId': 4, 'studentName': 'Priya Nair', 'activityId': 2, 'activityName': 'Yoga', 'timestamp': '2026-03-17T06:05:00Z'},
-    {'studentId': 6, 'studentName': 'Meera Iyer', 'activityId': 6, 'activityName': 'Sanskrit', 'timestamp': '2026-03-17T16:05:00Z'},
-    {'studentId': 9, 'studentName': 'Tulsi Das', 'activityId': 8, 'activityName': 'Indian Culture and Value for Kids', 'timestamp': '2026-03-17T15:00:00Z'},
-    {'studentId': 11, 'studentName': 'Sita Ram', 'activityId': 5, 'activityName': 'Art & Craft', 'timestamp': '2026-03-17T10:00:00Z'},
-    {'studentId': 13, 'studentName': 'Hanuman Prasad', 'activityId': 3, 'activityName': 'Self-Defence', 'timestamp': '2026-03-17T16:00:00Z'},
+    {
+      'studentId': 2,
+      'studentName': 'Radha Patel',
+      'activityId': 1,
+      'activityName': 'Swimming',
+      'timestamp': '2026-03-17T07:10:00Z'
+    },
+    {
+      'studentId': 4,
+      'studentName': 'Priya Nair',
+      'activityId': 2,
+      'activityName': 'Yoga',
+      'timestamp': '2026-03-17T06:05:00Z'
+    },
+    {
+      'studentId': 6,
+      'studentName': 'Meera Iyer',
+      'activityId': 6,
+      'activityName': 'Sanskrit',
+      'timestamp': '2026-03-17T16:05:00Z'
+    },
+    {
+      'studentId': 9,
+      'studentName': 'Tulsi Das',
+      'activityId': 8,
+      'activityName': 'Indian Culture and Value for Kids',
+      'timestamp': '2026-03-17T15:00:00Z'
+    },
+    {
+      'studentId': 11,
+      'studentName': 'Sita Ram',
+      'activityId': 5,
+      'activityName': 'Art & Craft',
+      'timestamp': '2026-03-17T10:00:00Z'
+    },
+    {
+      'studentId': 13,
+      'studentName': 'Hanuman Prasad',
+      'activityId': 3,
+      'activityName': 'Self-Defence',
+      'timestamp': '2026-03-17T16:00:00Z'
+    },
   ];
   int _mockPayloadIndex = 0;
 
@@ -39,7 +75,7 @@ class _GuardDashboardState extends State<GuardDashboard> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final user = await ApiService().getCurrentUser();
+      final user = ApiService().currentUser;
       final history = await FirestoreService().getQrScanHistory();
       if (mounted) {
         setState(() {
@@ -79,7 +115,8 @@ class _GuardDashboardState extends State<GuardDashboard> {
     _mockPayloadIndex++;
 
     try {
-      final result = await FirestoreService().processQrScan(Map<String, dynamic>.from(payload));
+      final result = await FirestoreService()
+          .processQrScan(Map<String, dynamic>.from(payload));
       if (mounted) {
         Navigator.of(context).pop(); // close scanning dialog
         setState(() {
@@ -115,7 +152,8 @@ class _GuardDashboardState extends State<GuardDashboard> {
                 color: AppColors.success.withAlpha(30),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle, color: AppColors.success, size: 28),
+              child: const Icon(Icons.check_circle,
+                  color: AppColors.success, size: 28),
             ),
             const SizedBox(width: 12),
             const Text('Attendance Marked!', style: TextStyle(fontSize: 18)),
@@ -125,11 +163,14 @@ class _GuardDashboardState extends State<GuardDashboard> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _detailRow(Icons.person, 'Student', scan['studentName'] as String? ?? ''),
+            _detailRow(
+                Icons.person, 'Student', scan['studentName'] as String? ?? ''),
             const SizedBox(height: 8),
-            _detailRow(Icons.sports, 'Activity', scan['activityName'] as String? ?? ''),
+            _detailRow(Icons.sports, 'Activity',
+                scan['activityName'] as String? ?? ''),
             const SizedBox(height: 8),
-            _detailRow(Icons.access_time, 'Check-in', _fmtTime(scan['checkInTime'] as String? ?? '')),
+            _detailRow(Icons.access_time, 'Check-in',
+                _fmtTime(scan['checkInTime'] as String? ?? '')),
           ],
         ),
         actions: [
@@ -147,7 +188,8 @@ class _GuardDashboardState extends State<GuardDashboard> {
       children: [
         Icon(icon, size: 18, color: AppColors.krishnaBlue),
         const SizedBox(width: 8),
-        Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        Text('$label: ',
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
         Expanded(child: Text(value, style: const TextStyle(fontSize: 13))),
       ],
     );
@@ -221,7 +263,9 @@ class _GuardDashboardState extends State<GuardDashboard> {
               _buildScanButton(),
               const SizedBox(height: 24),
               if (_isLoading)
-                const Center(child: CircularProgressIndicator(color: AppColors.krishnaBlue))
+                const Center(
+                    child:
+                        CircularProgressIndicator(color: AppColors.krishnaBlue))
               else ...[
                 _buildScanStats(),
                 const SizedBox(height: 24),
@@ -295,7 +339,8 @@ class _GuardDashboardState extends State<GuardDashboard> {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.krishnaBlue,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           elevation: 4,
         ),
       ),
@@ -309,9 +354,11 @@ class _GuardDashboardState extends State<GuardDashboard> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _statItem(Icons.qr_code_scanner, '${_scanHistory.length}', 'Total Scans\nToday', AppColors.krishnaBlue),
+            _statItem(Icons.qr_code_scanner, '${_scanHistory.length}',
+                'Total Scans\nToday', AppColors.krishnaBlue),
             Container(width: 1, height: 50, color: Colors.grey.shade200),
-            _statItem(Icons.check_circle_outline, '${_scanHistory.length}', 'Attendance\nMarked', AppColors.success),
+            _statItem(Icons.check_circle_outline, '${_scanHistory.length}',
+                'Attendance\nMarked', AppColors.success),
           ],
         ),
       ),
@@ -323,8 +370,13 @@ class _GuardDashboardState extends State<GuardDashboard> {
       children: [
         Icon(icon, color: color, size: 28),
         const SizedBox(height: 4),
-        Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
-        Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+        Text(value,
+            style: TextStyle(
+                fontSize: 24, fontWeight: FontWeight.bold, color: color)),
+        Text(label,
+            textAlign: TextAlign.center,
+            style:
+                const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
       ],
     );
   }
@@ -348,7 +400,8 @@ class _GuardDashboardState extends State<GuardDashboard> {
               child: Center(
                 child: Column(
                   children: [
-                    Icon(Icons.qr_code_scanner, size: 48, color: AppColors.textSecondary),
+                    Icon(Icons.qr_code_scanner,
+                        size: 48, color: AppColors.textSecondary),
                     SizedBox(height: 12),
                     Text('No scans yet. Tap "Scan QR Code" to begin.',
                         textAlign: TextAlign.center,
@@ -376,7 +429,8 @@ class _GuardDashboardState extends State<GuardDashboard> {
             color: AppColors.success.withAlpha(25),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.check_circle, color: AppColors.success, size: 24),
+          child: const Icon(Icons.check_circle,
+              color: AppColors.success, size: 24),
         ),
         title: Text(
           scan['studentName'] as String? ?? 'Unknown',
@@ -387,19 +441,22 @@ class _GuardDashboardState extends State<GuardDashboard> {
           children: [
             Row(
               children: [
-                const Icon(Icons.sports, size: 13, color: AppColors.textSecondary),
+                const Icon(Icons.sports,
+                    size: 13, color: AppColors.textSecondary),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     scan['activityName'] as String? ?? '',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.textSecondary),
                   ),
                 ),
               ],
             ),
             Row(
               children: [
-                const Icon(Icons.access_time, size: 13, color: AppColors.textSecondary),
+                const Icon(Icons.access_time,
+                    size: 13, color: AppColors.textSecondary),
                 const SizedBox(width: 4),
                 Text(
                   'Check-in: ${_fmtTime(checkInTime)}',
@@ -488,10 +545,12 @@ class _ScanningDialogState extends State<_ScanningDialog>
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.krishnaBlue, width: 3),
+                      border:
+                          Border.all(color: AppColors.krishnaBlue, width: 3),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.qr_code, size: 64, color: AppColors.krishnaBlue),
+                    child: const Icon(Icons.qr_code,
+                        size: 64, color: AppColors.krishnaBlue),
                   ),
                   AnimatedBuilder(
                     animation: _controller,
@@ -521,4 +580,3 @@ class _ScanningDialogState extends State<_ScanningDialog>
     );
   }
 }
-

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import '../services/firestore_service.dart';
 import '../models/student_model.dart';
 import '../utils/constants.dart';
 import '../services/qr_service.dart';
@@ -33,13 +32,15 @@ class _StudentListScreenState extends State<StudentListScreen> {
     super.dispose();
   }
 
+  // FIX: Uses ApiService (which delegates to FirestoreService).
+  // Single source of truth — Firestore only.
   Future<void> _loadStudents() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
     try {
-      final students = await FirestoreService().getStudents();
+      final students = await ApiService().getStudents();
       if (mounted) {
         setState(() {
           _students = students;
@@ -77,18 +78,13 @@ class _StudentListScreenState extends State<StudentListScreen> {
   }
 
   void _showAddStudentDialog([StudentModel? existing]) {
-    final nameCtrl =
-        TextEditingController(text: existing?.name);
-    final emailCtrl =
-        TextEditingController(text: existing?.email ?? '');
-    final phoneCtrl =
-        TextEditingController(text: existing?.phone ?? '');
-    final parentCtrl =
-        TextEditingController(text: existing?.parentName ?? '');
+    final nameCtrl = TextEditingController(text: existing?.name);
+    final emailCtrl = TextEditingController(text: existing?.email ?? '');
+    final phoneCtrl = TextEditingController(text: existing?.phone ?? '');
+    final parentCtrl = TextEditingController(text: existing?.parentName ?? '');
     final parentPhoneCtrl =
         TextEditingController(text: existing?.parentPhone ?? '');
-    final addressCtrl =
-        TextEditingController(text: existing?.address ?? '');
+    final addressCtrl = TextEditingController(text: existing?.address ?? '');
     final isEdit = existing != null;
 
     showDialog(
@@ -130,8 +126,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
               const SizedBox(height: 8),
               TextField(
                 controller: parentPhoneCtrl,
-                decoration:
-                    const InputDecoration(labelText: 'Parent Phone'),
+                decoration: const InputDecoration(labelText: 'Parent Phone'),
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 8),
@@ -145,8 +140,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () async {
               if (nameCtrl.text.trim().isEmpty) return;
@@ -154,10 +148,8 @@ class _StudentListScreenState extends State<StudentListScreen> {
               try {
                 final data = {
                   'name': nameCtrl.text.trim(),
-                  if (emailCtrl.text.isNotEmpty)
-                    'email': emailCtrl.text.trim(),
-                  if (phoneCtrl.text.isNotEmpty)
-                    'phone': phoneCtrl.text.trim(),
+                  if (emailCtrl.text.isNotEmpty) 'email': emailCtrl.text.trim(),
+                  if (phoneCtrl.text.isNotEmpty) 'phone': phoneCtrl.text.trim(),
                   if (parentCtrl.text.isNotEmpty)
                     'parent_name': parentCtrl.text.trim(),
                   if (parentPhoneCtrl.text.isNotEmpty)
@@ -165,15 +157,19 @@ class _StudentListScreenState extends State<StudentListScreen> {
                   if (addressCtrl.text.isNotEmpty)
                     'address': addressCtrl.text.trim(),
                 };
+
                 if (isEdit) {
+                  // FIX: Use docId (Firestore string ID) for updates.
+                  // If docId is null the student came from mock data — create instead.
                   final docId = existing.docId;
-                  if (docId != null) {
-                    await FirestoreService().updateStudent(docId, data);
+                  if (docId != null && docId.isNotEmpty) {
+                    await ApiService().updateStudent(docId, data);
                   } else {
-                    await ApiService().updateStudent(existing.id, data);
+                    // No docId means it was mock data — save as new Firestore doc
+                    await ApiService().createStudent(data);
                   }
                 } else {
-                  await FirestoreService().createStudent(data);
+                  await ApiService().createStudent(data);
                 }
                 _loadStudents();
               } catch (e) {
@@ -239,25 +235,22 @@ class _StudentListScreenState extends State<StudentListScreen> {
                     style: const TextStyle(color: AppColors.textSecondary)),
               const Divider(height: 24),
               _detailRow(Icons.phone, 'Phone', student.phone),
-              _detailRow(Icons.family_restroom, 'Parent',
-                  student.parentName),
+              _detailRow(Icons.family_restroom, 'Parent', student.parentName),
               _detailRow(
                   Icons.phone_in_talk, 'Parent Phone', student.parentPhone),
-              _detailRow(
-                  Icons.location_on, 'Address', student.address),
+              _detailRow(Icons.location_on, 'Address', student.address),
               const SizedBox(height: 16),
               const Text('Student QR Code',
                   style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.deepBlue)),
+                      fontWeight: FontWeight.bold, color: AppColors.deepBlue)),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: AppColors.krishnaBlue.withAlpha(80)),
+                  border:
+                      Border.all(color: AppColors.krishnaBlue.withAlpha(80)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withAlpha(15),
@@ -281,7 +274,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'ID: ${student.id}',
+                'ID: ${student.docId ?? student.id}',
                 style: const TextStyle(
                     fontSize: 12, color: AppColors.textSecondary),
               ),
@@ -300,8 +293,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
         children: [
           Icon(icon, size: 18, color: AppColors.krishnaBlue),
           const SizedBox(width: 8),
-          Text('$label: ',
-              style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w600)),
           Expanded(
               child: Text(value,
                   style: const TextStyle(color: AppColors.textSecondary))),
@@ -323,8 +315,8 @@ class _StudentListScreenState extends State<StudentListScreen> {
         onPressed: () => _showAddStudentDialog(),
         backgroundColor: AppColors.krishnaOrange,
         icon: const Icon(Icons.add, color: AppColors.white),
-        label: const Text('Add Student',
-            style: TextStyle(color: AppColors.white)),
+        label:
+            const Text('Add Student', style: TextStyle(color: AppColors.white)),
       ),
       body: Column(
         children: [
@@ -348,7 +340,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
               ),
             ),
           ),
-          if (!_isLoading && !(_error != null))
+          if (!_isLoading && _error == null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -441,13 +433,11 @@ class _StudentListScreenState extends State<StudentListScreen> {
                     if (student.email != null)
                       Text(student.email!,
                           style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12)),
+                              color: AppColors.textSecondary, fontSize: 12)),
                     if (student.phone != null)
                       Text(student.phone!,
                           style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12)),
+                              color: AppColors.textSecondary, fontSize: 12)),
                   ],
                 ),
               ),
@@ -455,8 +445,8 @@ class _StudentListScreenState extends State<StudentListScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.qr_code,
-                        color: AppColors.krishnaBlue),
+                    icon:
+                        const Icon(Icons.qr_code, color: AppColors.krishnaBlue),
                     tooltip: 'Show QR Code',
                     onPressed: () => _showStudentDetail(student),
                   ),
@@ -476,25 +466,26 @@ class _StudentListScreenState extends State<StudentListScreen> {
                                   onPressed: () => Navigator.pop(ctx, false),
                                   child: const Text('Cancel')),
                               ElevatedButton(
-                                  onPressed: () =>
-                                      Navigator.pop(ctx, true),
+                                  onPressed: () => Navigator.pop(ctx, true),
                                   child: const Text('Delete')),
                             ],
                           ),
                         );
                         if (confirmed == true) {
                           try {
-                            if (student.docId != null) {
-                              await FirestoreService().deleteStudent(student.docId!);
+                            // FIX: Use docId for Firestore delete
+                            final docId = student.docId;
+                            if (docId != null && docId.isNotEmpty) {
+                              await ApiService().deleteStudent(docId);
                             } else {
-                              await ApiService().deleteStudent(student.id);
+                              throw Exception(
+                                  'Cannot delete: student has no Firestore ID');
                             }
                             _loadStudents();
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content:
-                                        Text('Student deleted'),
+                                    content: Text('Student deleted'),
                                     backgroundColor: AppColors.success),
                               );
                             }
@@ -519,11 +510,9 @@ class _StudentListScreenState extends State<StudentListScreen> {
                       PopupMenuItem(
                           value: 'delete',
                           child: Row(children: [
-                            Icon(Icons.delete,
-                                size: 16, color: Colors.red),
+                            Icon(Icons.delete, size: 16, color: Colors.red),
                             SizedBox(width: 8),
-                            Text('Delete',
-                                style: TextStyle(color: Colors.red)),
+                            Text('Delete', style: TextStyle(color: Colors.red)),
                           ])),
                     ],
                   ),
@@ -536,4 +525,3 @@ class _StudentListScreenState extends State<StudentListScreen> {
     );
   }
 }
-

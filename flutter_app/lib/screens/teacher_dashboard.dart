@@ -27,7 +27,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final user = await ApiService().getCurrentUser();
+      final user = ApiService().currentUser;
       final result = await FirestoreService().getTeacherDashboard();
       if (mounted) {
         setState(() {
@@ -78,8 +78,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               const SizedBox(height: 20),
               if (_isLoading)
                 const Center(
-                    child: CircularProgressIndicator(
-                        color: AppColors.krishnaBlue))
+                    child:
+                        CircularProgressIndicator(color: AppColors.krishnaBlue))
               else ...[
                 _buildClassSummary(),
                 const SizedBox(height: 20),
@@ -196,15 +196,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             Text(
               value,
               style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: color),
+                  fontSize: 22, fontWeight: FontWeight.bold, color: color),
             ),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontSize: 11, color: AppColors.textSecondary),
+              style:
+                  const TextStyle(fontSize: 11, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -263,8 +261,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   }
 
   Widget _buildUpcomingActivities() {
-    final activities =
-        (_data?['upcoming_activities'] as List<dynamic>?) ?? [];
+    final activities = (_data?['upcoming_activities'] as List<dynamic>?) ?? [];
     if (activities.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -314,12 +311,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           ),
                           Text(
                             a['schedule'] as String? ?? '',
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            style: const TextStyle(
+                                fontSize: 12, color: AppColors.textSecondary),
                           ),
                           if (a['teacher'] != null)
                             Text(
                               'Teacher: ${a['teacher']}',
-                              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                              style: const TextStyle(
+                                  fontSize: 11, color: AppColors.textSecondary),
                             ),
                         ],
                       ),
@@ -328,7 +327,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppColors.krishnaBlue.withAlpha(20),
                             borderRadius: BorderRadius.circular(12),
@@ -345,7 +345,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                         const SizedBox(height: 4),
                         const Text(
                           'Tap to view',
-                          style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                          style: TextStyle(
+                              fontSize: 10, color: AppColors.textSecondary),
                         ),
                       ],
                     ),
@@ -379,8 +380,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   }
 
   Widget _buildAttendanceHistory() {
-    final history =
-        (_data?['attendance_history'] as List<dynamic>?) ?? [];
+    final history = (_data?['attendance_history'] as List<dynamic>?) ?? [];
     if (history.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -432,8 +432,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 ],
               ),
               trailing: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: isOut
                       ? AppColors.success.withAlpha(20)
@@ -502,11 +501,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 color: const Color(0xFF7B1FA2).withAlpha(30),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.person_add_alt_1, color: Color(0xFF7B1FA2)),
+              child:
+                  const Icon(Icons.person_add_alt_1, color: Color(0xFF7B1FA2)),
             ),
-            title: const Text('Admission', style: TextStyle(fontWeight: FontWeight.w600)),
+            title: const Text('Admission',
+                style: TextStyle(fontWeight: FontWeight.w600)),
             subtitle: const Text('Add new student admission'),
-            trailing: const Icon(Icons.chevron_right, color: AppColors.krishnaBlue),
+            trailing:
+                const Icon(Icons.chevron_right, color: AppColors.krishnaBlue),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(builder: (_) => const AdmissionForm()),
             ),
@@ -533,11 +535,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ),
           child: Icon(icon, color: color),
         ),
-        title:
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(subtitle),
-        trailing:
-            const Icon(Icons.chevron_right, color: AppColors.krishnaBlue),
+        trailing: const Icon(Icons.chevron_right, color: AppColors.krishnaBlue),
         onTap: () => Navigator.of(context).pushNamed(route),
       ),
     );
@@ -586,7 +586,8 @@ class _ActivityStudentsSheetState extends State<_ActivityStudentsSheet> {
 
   Future<void> _loadStudents() async {
     try {
-      final result = await FirestoreService().getEnrolledStudents(widget.activityId);
+      final result =
+          await FirestoreService().getEnrolledStudents(widget.activityId);
       if (mounted) {
         setState(() {
           _students = result;
@@ -641,7 +642,8 @@ class _ActivityStudentsSheetState extends State<_ActivityStudentsSheet> {
                         color: AppColors.krishnaOrange.withAlpha(30),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.event, color: AppColors.krishnaOrange),
+                      child: const Icon(Icons.event,
+                          color: AppColors.krishnaOrange),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -657,15 +659,20 @@ class _ActivityStudentsSheetState extends State<_ActivityStudentsSheet> {
                             ),
                           ),
                           Text(widget.activitySchedule,
-                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary)),
                           if (widget.activityTeacher.isNotEmpty)
                             Text('Teacher: ${widget.activityTeacher}',
-                                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary)),
                         ],
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: AppColors.krishnaBlue.withAlpha(20),
                         borderRadius: BorderRadius.circular(12),
@@ -687,10 +694,12 @@ class _ActivityStudentsSheetState extends State<_ActivityStudentsSheet> {
                   onChanged: (v) => setState(() => _search = v),
                   decoration: InputDecoration(
                     hintText: 'Search students...',
-                    prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                    prefixIcon: const Icon(Icons.search,
+                        color: AppColors.textSecondary),
                     filled: true,
                     fillColor: Colors.grey.shade100,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -704,7 +713,9 @@ class _ActivityStudentsSheetState extends State<_ActivityStudentsSheet> {
           // Student list
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppColors.krishnaBlue))
+                ? const Center(
+                    child:
+                        CircularProgressIndicator(color: AppColors.krishnaBlue))
                 : _filtered.isEmpty
                     ? const Center(
                         child: Text('No students found',
@@ -719,7 +730,8 @@ class _ActivityStudentsSheetState extends State<_ActivityStudentsSheet> {
                             margin: const EdgeInsets.only(bottom: 8),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: AppColors.krishnaBlue.withAlpha(25),
+                                backgroundColor:
+                                    AppColors.krishnaBlue.withAlpha(25),
                                 child: Text(
                                   '${i + 1}',
                                   style: const TextStyle(
@@ -731,14 +743,16 @@ class _ActivityStudentsSheetState extends State<_ActivityStudentsSheet> {
                               ),
                               title: Text(
                                 s['name'] as String? ?? '',
-                                style: const TextStyle(fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600),
                               ),
                               subtitle: Text(
                                 'Roll: ${s['roll_number'] ?? ''}',
                                 style: const TextStyle(fontSize: 12),
                               ),
                               trailing: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: AppColors.success.withAlpha(20),
                                   borderRadius: BorderRadius.circular(10),
@@ -762,4 +776,3 @@ class _ActivityStudentsSheetState extends State<_ActivityStudentsSheet> {
     );
   }
 }
-

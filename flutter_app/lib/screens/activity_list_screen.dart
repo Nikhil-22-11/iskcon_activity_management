@@ -38,28 +38,28 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
         });
       }
     } on ApiException catch (e) {
-      if (mounted) setState(() {
-        _error = e.message;
-        _isLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          _error = e.message;
+          _isLoading = false;
+        });
     } catch (e) {
-      if (mounted) setState(() {
-        _error = 'Failed to load activities';
-        _isLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          _error = 'Failed to load activities';
+          _isLoading = false;
+        });
     }
   }
 
   void _showAddActivityDialog([ActivityModel? existing]) {
     final nameCtrl = TextEditingController(text: existing?.name);
     final descCtrl = TextEditingController(text: existing?.description ?? '');
-    final scheduleCtrl =
-        TextEditingController(text: existing?.schedule ?? '');
+    final scheduleCtrl = TextEditingController(text: existing?.schedule ?? '');
     final teacherCtrl = TextEditingController(text: existing?.teacher ?? '');
     final capacityCtrl =
         TextEditingController(text: existing?.capacity?.toString() ?? '');
-    final ageGroupCtrl =
-        TextEditingController(text: existing?.ageGroup ?? '');
+    final ageGroupCtrl = TextEditingController(text: existing?.ageGroup ?? '');
     final isEdit = existing != null;
 
     showDialog(
@@ -103,8 +103,7 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
               const SizedBox(height: 8),
               TextField(
                   controller: ageGroupCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Age Group')),
+                  decoration: const InputDecoration(labelText: 'Age Group')),
             ],
           ),
         ),
@@ -131,10 +130,11 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
                 };
                 if (isEdit) {
                   final docId = existing.docId;
-                  if (docId != null) {
+                  if (docId != null && docId.isNotEmpty) {
                     await FirestoreService().updateActivity(docId, data);
                   } else {
-                    await ApiService().updateActivity(existing.id, data);
+                    // No docId — save as new Firestore doc
+                    await FirestoreService().createActivity(data);
                   }
                 } else {
                   await FirestoreService().createActivity(data);
@@ -199,31 +199,27 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
               const Divider(height: 24),
               if (activity.description != null) ...[
                 Text(activity.description!,
-                    style:
-                        const TextStyle(color: AppColors.textSecondary)),
+                    style: const TextStyle(color: AppColors.textSecondary)),
                 const SizedBox(height: 8),
               ],
               _row(Icons.schedule, 'Schedule', activity.schedule),
               _row(Icons.person, 'Teacher', activity.teacher),
-              _row(Icons.people, 'Capacity',
-                  activity.capacity?.toString()),
+              _row(Icons.people, 'Capacity', activity.capacity?.toString()),
               _row(Icons.child_care, 'Age Group', activity.ageGroup),
               const SizedBox(height: 16),
               const Text('Activity QR Code',
                   style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.deepBlue)),
+                      fontWeight: FontWeight.bold, color: AppColors.deepBlue)),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: AppColors.krishnaOrange.withAlpha(80)),
+                  border:
+                      Border.all(color: AppColors.krishnaOrange.withAlpha(80)),
                   boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withAlpha(15), blurRadius: 8),
+                    BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 8),
                   ],
                 ),
                 child: QrImageView(
@@ -255,12 +251,10 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
         children: [
           Icon(icon, size: 18, color: AppColors.krishnaOrange),
           const SizedBox(width: 8),
-          Text('$label: ',
-              style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w600)),
           Expanded(
               child: Text(value,
-                  style:
-                      const TextStyle(color: AppColors.textSecondary))),
+                  style: const TextStyle(color: AppColors.textSecondary))),
         ],
       ),
     );
@@ -312,7 +306,8 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.event_outlined, size: 64, color: AppColors.textSecondary),
+            Icon(Icons.event_outlined,
+                size: 64, color: AppColors.textSecondary),
             SizedBox(height: 16),
             Text('No activities found',
                 style: TextStyle(color: AppColors.textSecondary)),
@@ -396,10 +391,13 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
                         );
                         if (confirmed == true) {
                           try {
-                            if (activity.docId != null) {
-                              await FirestoreService().deleteActivity(activity.docId!);
+                            if (activity.docId != null &&
+                                activity.docId!.isNotEmpty) {
+                              await FirestoreService()
+                                  .deleteActivity(activity.docId!);
                             } else {
-                              await ApiService().deleteActivity(activity.id);
+                              throw Exception(
+                                  'Cannot delete: activity has no Firestore ID');
                             }
                             _loadActivities();
                           } catch (e) {
@@ -424,8 +422,7 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
                           child: Row(children: [
                             Icon(Icons.delete, size: 16, color: Colors.red),
                             SizedBox(width: 8),
-                            Text('Delete',
-                                style: TextStyle(color: Colors.red)),
+                            Text('Delete', style: TextStyle(color: Colors.red)),
                           ])),
                     ],
                   ),

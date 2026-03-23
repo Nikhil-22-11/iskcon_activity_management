@@ -39,51 +39,50 @@ class DefaultFirebaseOptions {
   //          in flutter_app/android/app/google-services.json
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: '1:000000000000:android:0000000000000000000000',
-    messagingSenderId: '000000000000',
+    apiKey: 'AIzaSyDND_0GL-MXTEng9IJwV_SGcgAwsPb2hWc',
+    appId: '1:487039653770:android:fef7488a86526dcd209a73',
+    messagingSenderId: '487039653770',
     projectId: 'basil-woods-activitymanagement',
-    storageBucket: 'basil-woods-activitymanagement.appspot.com',
+    storageBucket: 'basil-woods-activitymanagement.firebasestorage.app',
   );
 
   // iOS: download GoogleService-Info.plist from Firebase console and place it
   //      in flutter_app/ios/Runner/GoogleService-Info.plist
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: '1:000000000000:ios:0000000000000000000000',
-    messagingSenderId: '000000000000',
+    apiKey: 'AIzaSyCmmlcxg2CTUHYj0TSUa68M_bw_W0ehp3A',
+    appId: '1:487039653770:ios:4332c1e4a182147c209a73',
+    messagingSenderId: '487039653770',
     projectId: 'basil-woods-activitymanagement',
-    storageBucket: 'basil-woods-activitymanagement.appspot.com',
+    storageBucket: 'basil-woods-activitymanagement.firebasestorage.app',
     iosBundleId: 'com.example.iskconActivityManagement',
   );
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_WEB_API_KEY',
-    appId: '1:000000000000:web:0000000000000000000000',
-    messagingSenderId: '000000000000',
+    apiKey: 'AIzaSyBP-RdyDlk5kVhbgpPqkPx-TWPbVS5nDZE',
+    appId: '1:487039653770:web:1c59ad22f645b972209a73',
+    messagingSenderId: '487039653770',
     projectId: 'basil-woods-activitymanagement',
     authDomain: 'basil-woods-activitymanagement.firebaseapp.com',
-    storageBucket: 'basil-woods-activitymanagement.appspot.com',
-    measurementId: 'G-XXXXXXXXXX',
+    storageBucket: 'basil-woods-activitymanagement.firebasestorage.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: '1:000000000000:ios:0000000000000000000000',
-    messagingSenderId: '000000000000',
+    apiKey: 'AIzaSyCmmlcxg2CTUHYj0TSUa68M_bw_W0ehp3A',
+    appId: '1:487039653770:ios:4332c1e4a182147c209a73',
+    messagingSenderId: '487039653770',
     projectId: 'basil-woods-activitymanagement',
-    storageBucket: 'basil-woods-activitymanagement.appspot.com',
+    storageBucket: 'basil-woods-activitymanagement.firebasestorage.app',
     iosBundleId: 'com.example.iskconActivityManagement',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'YOUR_WEB_API_KEY',
-    appId: '1:000000000000:web:0000000000000000000000',
-    messagingSenderId: '000000000000',
+    apiKey: 'AIzaSyBP-RdyDlk5kVhbgpPqkPx-TWPbVS5nDZE',
+    appId: '1:487039653770:web:cb47aec325454b78209a73',
+    messagingSenderId: '487039653770',
     projectId: 'basil-woods-activitymanagement',
     authDomain: 'basil-woods-activitymanagement.firebaseapp.com',
-    storageBucket: 'basil-woods-activitymanagement.appspot.com',
-    measurementId: 'G-XXXXXXXXXX',
+    storageBucket: 'basil-woods-activitymanagement.firebasestorage.app',
   );
+
 }

@@ -39,15 +39,17 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
         });
       }
     } on ApiException catch (e) {
-      if (mounted) setState(() {
-        _error = e.message;
-        _isLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          _error = e.message;
+          _isLoading = false;
+        });
     } catch (e) {
-      if (mounted) setState(() {
-        _error = 'Failed to load visitors';
-        _isLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          _error = 'Failed to load visitors';
+          _isLoading = false;
+        });
     }
   }
 
@@ -73,14 +75,12 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
             children: [
               TextField(
                 controller: nameCtrl,
-                decoration:
-                    const InputDecoration(labelText: 'Visitor Name *'),
+                decoration: const InputDecoration(labelText: 'Visitor Name *'),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: phoneCtrl,
-                decoration:
-                    const InputDecoration(labelText: 'Phone Number'),
+                decoration: const InputDecoration(labelText: 'Phone Number'),
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 8),
@@ -165,13 +165,12 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
             ),
             const SizedBox(height: 16),
             Text(visitor.visitorName,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold)),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             if (visitor.visitReason != null) ...[
               const SizedBox(height: 4),
               Text(visitor.visitReason!,
-                  style:
-                      const TextStyle(color: AppColors.textSecondary)),
+                  style: const TextStyle(color: AppColors.textSecondary)),
             ],
             const SizedBox(height: 16),
             Container(
@@ -179,11 +178,10 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
               decoration: BoxDecoration(
                 color: AppColors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: const Color(0xFF7B1FA2).withAlpha(80)),
+                border:
+                    Border.all(color: const Color(0xFF7B1FA2).withAlpha(80)),
                 boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withAlpha(15), blurRadius: 8),
+                  BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 8),
                 ],
               ),
               child: QrImageView(
@@ -203,8 +201,8 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
             const SizedBox(height: 8),
             Text(
               'Visitor ID: ${visitor.id}',
-              style: const TextStyle(
-                  fontSize: 12, color: AppColors.textSecondary),
+              style:
+                  const TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 24),
           ],
@@ -232,10 +230,10 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
     if (confirmed == true) {
       try {
         final docId = visitor.docId;
-        if (docId != null) {
+        if (docId != null && docId.isNotEmpty) {
           await FirestoreService().visitorCheckOut(docId);
         } else {
-          await ApiService().visitorCheckOut(visitor.id);
+          throw Exception('Cannot check out: visitor has no Firestore ID');
         }
         _loadVisitors();
         if (mounted) {
@@ -268,8 +266,7 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
       appBar: AppBar(
         title: const Text(AppStrings.visitors),
         actions: [
-          IconButton(
-              icon: const Icon(Icons.refresh), onPressed: _loadVisitors),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadVisitors),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -283,8 +280,7 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
     );
   }
 
-  Widget _buildBody(
-      List<VisitorModel> active, List<VisitorModel> past) {
+  Widget _buildBody(List<VisitorModel> active, List<VisitorModel> past) {
     if (_isLoading) {
       return const Center(
           child: CircularProgressIndicator(color: AppColors.krishnaBlue));
@@ -317,8 +313,7 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
                 style: TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 8),
             const Text('Tap the button to check in a visitor',
-                style:
-                    TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
           ],
         ),
       );
@@ -429,8 +424,7 @@ class _VisitorCheckInScreenState extends State<VisitorCheckInScreen> {
                       onPressed: () => _handleCheckOut(visitor),
                       child: const Text('Check Out',
                           style: TextStyle(
-                              color: AppColors.krishnaOrange,
-                              fontSize: 12)),
+                              color: AppColors.krishnaOrange, fontSize: 12)),
                     ),
                 ],
               ),
